@@ -1,0 +1,31 @@
+[package]
+name = "householder"
+version = "0.0.1"
+authors = ["UCL-ARC"]
+edition = "2018"
+description = "A Rust native advanced linear algebra library."
+license = "BSD-3-Clause"
+homepage = "https://github.com/UCL-ARC/householder"
+repository = "https://github.com/UCL-ARC/householder"
+readme = "README.md"
+keywords = ["numerics"]
+categories = ["mathematics", "science"]
+
+[lib]
+name = "householder"
+
+[dependencies]
+num = "0.4"
+cauchy = "0.4"
+ndarray = "0.15"
+rand = "0.8"
+itertools = "0.10"
+rand_distr = "0.4"
+thiserror = "1.0"
+
+[dev-dependencies]
+criterion = { version = "0.3", features = ["html_reports"] }
+
+
+[package.metadata.docs.rs]
+rustdoc-args = [ "--html-in-header", "katex-header.html" ]
