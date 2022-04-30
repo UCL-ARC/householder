@@ -215,6 +215,94 @@ where
     }
 }
 
+impl<'a, Item, MatImpl, Layout, Size, Iter> Dimensions
+    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    fn dim(&self) -> (usize, usize) {
+        self.0.dim()
+    }
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> SafeRandomAccess
+    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    type Output = Item;
+
+    fn get(&self, row: usize, col: usize) -> Self::Output {
+        self.0.get(row, col)
+    }
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> UnsafeRandomAccess
+    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    type Output = Item;
+
+    unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
+        self.0.get(row, col)
+    }
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> SizeType
+    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    type S = Size;
+
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> LayoutType
+    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    type L = Layout;
+
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> Iterable<'a, Item, Iter>
+    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    
+    fn iter(&'a self) -> Iter {
+        self.0.iter()
+    }
+
+}
+
 //     // /// Evaluate a matrix into a new base matrix
 //     // pub fn eval(&self) -> Matrix<Item, BaseMatrixCLayout<Item>> {
 //     //     let (rows, cols) = self.dim();
