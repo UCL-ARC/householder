@@ -9,8 +9,8 @@ macro_rules! mat {
             $ScalarType,
             crate::base_matrix::DynamicMatrixCLayout<$ScalarType>,
             crate::matrix_traits::CLayout,
-            crate__matrix_traits::MatrixD,
-            std::slice::Iter<'_, $ScaarType>,
+            crate::matrix_traits::MatrixD,
+            crate::iterators::CopiedSliceIterator<'_, $ScalarType>,
         >::from_dimensions($dim.0, $dim.1)
     };
 
@@ -21,7 +21,7 @@ macro_rules! mat {
             crate::base_matrix::DynamicMatrixFortranLayout<$ScalarType>,
             crate::matrix_traits::FortranLayout,
             crate::matrix_traits::MatrixD,
-            std::slice::Iter<'_, $ScalarType>,
+            crate::iterators::CopiedSliceIterator<'_, $ScalarType>,
         >::from_dimensions_f($dim.0, $dim.1)
     };
 }

@@ -1,5 +1,6 @@
 //! The base matrix data types
 use crate::matrix_traits::*;
+use crate::iterators::*;
 use cauchy::Scalar;
 
 /// Base matrix with C Layout
@@ -7,6 +8,8 @@ pub struct DynamicMatrixCLayout<Item: Scalar> {
     data: Vec<Item>,
     dim: (usize, usize),
 }
+
+
 
 /// Base matrix with Fortran Layout
 pub struct DynamicMatrixFortranLayout<Item: Scalar> {
@@ -66,34 +69,34 @@ impl<Item: Scalar> SizeType for DynamicMatrixFortranLayout<Item> {
 
 }
 
-impl<'a, Item: Scalar> Iterable<'a, Item, std::slice::Iter<'a, Item>>
+impl<'a, Item: Scalar> Iterable<'a, Item, CopiedSliceIterator<'a, Item>>
     for DynamicMatrixCLayout<Item>
 {
-    fn iter(&'a self) -> std::slice::Iter<'a, Item> {
-        self.data.iter()
+    fn iter(&'a self) -> CopiedSliceIterator<'a, Item> {
+        self.data.iter().copied()
     }
 }
 
-impl<'a, Item: Scalar> Iterable<'a, Item, std::slice::Iter<'a, Item>>
+impl<'a, Item: Scalar> Iterable<'a, Item, CopiedSliceIterator<'a, Item>>
     for DynamicMatrixFortranLayout<Item>
 {
-    fn iter(&'a self) -> std::slice::Iter<'a, Item> {
-        self.data.iter()
+    fn iter(&'a self) -> CopiedSliceIterator<'a, Item> {
+        self.data.iter().copied()
     }
 }
 
-impl<'a, Item: Scalar> IterableMut<'a, Item, std::slice::IterMut<'a, Item>>
+impl<'a, Item: Scalar> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
     for DynamicMatrixCLayout<Item>
 {
-    fn iter_mut(&'a mut self) -> std::slice::IterMut<'a, Item> {
+    fn iter_mut(&'a mut self) -> SliceIteratorMut<'a, Item> {
         self.data.iter_mut()
     }
 }
 
-impl<'a, Item: Scalar> IterableMut<'a, Item, std::slice::IterMut<'a, Item>>
+impl<'a, Item: Scalar> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
     for DynamicMatrixFortranLayout<Item>
 {
-    fn iter_mut(&'a mut self) -> std::slice::IterMut<'a, Item> {
+    fn iter_mut(&'a mut self) -> SliceIteratorMut<'a, Item> {
         self.data.iter_mut()
     }
 }

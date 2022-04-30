@@ -3,9 +3,9 @@
 
 use crate::base_matrix::*;
 //use crate::matrix_operators::*;
-use crate::mat;
 use crate::matrix_traits::*;
-use cauchy::{c32, c64, Scalar};
+use crate::iterators::*;
+use cauchy::Scalar;
 use std::marker::PhantomData;
 
 /// A matrix is a simple enum struct.
@@ -24,7 +24,7 @@ where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
     MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>;
 
 impl<'a, Item, MatImpl, Layout, Size, Iter> Matrix<'a, Item, MatImpl, Layout, Size, Iter>
@@ -33,7 +33,7 @@ where
     MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
 {
     pub fn new(op: MatImpl) -> Self {
         Self(
@@ -64,7 +64,7 @@ where
 // }
 
 impl<'a, Item: Scalar>
-    Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD, std::slice::Iter<'a, Item>>
+    Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD, CopiedSliceIterator<'a, Item>>
 {
     /// Create a new matrix with dimensions (rows, cols) using C Layout
     pub fn from_dimensions(rows: usize, cols: usize) -> Self {
@@ -79,7 +79,7 @@ impl<'a, Item: Scalar>
         DynamicMatrixFortranLayout<Item>,
         FortranLayout,
         MatrixD,
-        std::slice::Iter<'a, Item>,
+        CopiedSliceIterator<'a, Item>,
     >
 {
     /// Create a new matrix with dimensions (rows, cols) using Fortran Layout
@@ -95,7 +95,7 @@ where
     MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
 {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
@@ -109,7 +109,7 @@ where
     MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
 {
     type Output = Item;
 
@@ -125,13 +125,55 @@ where
     MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
 {
     type Output = Item;
 
     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
         self.0.get(row, col)
     }
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> SizeType
+    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    type S = Size;
+
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> LayoutType
+    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    type L = Layout;
+
+}
+
+impl<'a, Item, MatImpl, Layout, Size, Iter> Iterable<'a, Item, Iter>
+    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = Item>,
+{
+    
+    fn iter(&'a self) -> Iter {
+        self.0.iter()
+    }
+
 }
 
 
@@ -150,7 +192,7 @@ where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
     MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>;
 
 impl<'a, Item, MatImpl, Layout, Size, Iter> MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
@@ -159,7 +201,7 @@ where
     MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
 {
     pub fn new(op: &'a MatImpl) -> Self {
         Self(

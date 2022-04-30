@@ -252,7 +252,7 @@ pub trait Dimensions {
 }
 
 /// Implement this trait to provide an iterator
-pub trait Iterable<'a, Item: Scalar, Iter: Iterator<Item = &'a Item>> {
+pub trait Iterable<'a, Item: Scalar, Iter: Iterator<Item = Item>> {
     fn iter(&'a self) -> Iter;
 }
 
@@ -267,7 +267,7 @@ pub trait MatrixTrait<
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
 >:
     RandomAccess<Item>
     + Dimensions
@@ -283,7 +283,7 @@ pub trait MatrixMutTrait<
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
     IterMut: Iterator<Item = &'a mut Item>
 >:
     RandomAccess<Item>
@@ -301,7 +301,7 @@ where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
     Mat: RandomAccess<Item>
         + Dimensions
         + LayoutType<L = Layout>
@@ -316,7 +316,7 @@ where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = &'a Item>,
+    Iter: Iterator<Item = Item>,
     IterMut: Iterator<Item = &'a mut Item>,
     Mat: RandomAccessMut<Item>
         + Dimensions

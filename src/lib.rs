@@ -5,3 +5,4 @@ pub mod matrix;
 pub mod base_matrix;
 //pub mod matrix_operators;
 pub mod macros;
+pub mod iterators;
