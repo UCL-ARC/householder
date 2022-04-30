@@ -1,61 +1,105 @@
 //! The base matrix data types
-use cauchy::Scalar;
 use crate::matrix_traits::*;
+use cauchy::Scalar;
 
 /// Base matrix with C Layout
-pub struct BaseMatrixCLayout<Item: Scalar> {
+pub struct DynamicMatrixCLayout<Item: Scalar> {
     data: Vec<Item>,
     dim: (usize, usize),
 }
 
 /// Base matrix with Fortran Layout
-pub struct BaseMatrixFortranLayout<Item: Scalar> {
+pub struct DynamicMatrixFortranLayout<Item: Scalar> {
     data: Vec<Item>,
     dim: (usize, usize),
 }
 
-impl<Item: Scalar> BaseMatrixCLayout<Item> {
-
+impl<Item: Scalar> DynamicMatrixCLayout<Item> {
     // New C Layout base matrix with dimensions (rows, cols)
     pub fn new(rows: usize, cols: usize) -> Self {
-        BaseMatrixCLayout::<Item> {
+        DynamicMatrixCLayout::<Item> {
             data: vec![num::cast::<f64, Item>(0.0).unwrap(); rows * cols],
-            dim: (rows, cols)
+            dim: (rows, cols),
         }
     }
-
 }
 
-impl<Item: Scalar> BaseMatrixFortranLayout<Item> {
-
+impl<Item: Scalar> DynamicMatrixFortranLayout<Item> {
     // New Fortran Layout base matrix with dimensions (rows, cols)
     pub fn new(rows: usize, cols: usize) -> Self {
-        BaseMatrixFortranLayout::<Item> {
+        DynamicMatrixFortranLayout::<Item> {
             data: vec![num::cast::<f64, Item>(0.0).unwrap(); rows * cols],
-            dim: (rows, cols)
+            dim: (rows, cols),
         }
     }
-
 }
 
-
-impl<Item: Scalar> CLayout for BaseMatrixCLayout<Item> {}
-
-impl<Item: Scalar> FortranLayout for BaseMatrixFortranLayout<Item> {}
-
-impl<Item: Scalar> Dimensions for BaseMatrixCLayout<Item> {
+impl<Item: Scalar> Dimensions for DynamicMatrixCLayout<Item> {
     fn dim(&self) -> (usize, usize) {
         self.dim
     }
 }
 
-impl<Item: Scalar> Dimensions for BaseMatrixFortranLayout<Item> {
+impl<Item: Scalar> Dimensions for DynamicMatrixFortranLayout<Item> {
     fn dim(&self) -> (usize, usize) {
         self.dim
     }
 }
 
-impl<Item: Scalar> SafeRandomAccess for BaseMatrixCLayout<Item> {
+impl<Item: Scalar> LayoutType for DynamicMatrixCLayout<Item> {
+    type L = CLayout;
+
+}
+
+impl<Item: Scalar> LayoutType for DynamicMatrixFortranLayout<Item> {
+    type L = FortranLayout;
+
+}
+
+impl<Item: Scalar> SizeType for DynamicMatrixCLayout<Item> {
+    type S = MatrixD;
+
+}
+
+impl<Item: Scalar> SizeType for DynamicMatrixFortranLayout<Item> {
+    type S = MatrixD;
+
+}
+
+impl<'a, Item: Scalar> Iterable<'a, Item, std::slice::Iter<'a, Item>>
+    for DynamicMatrixCLayout<Item>
+{
+    fn iter(&'a self) -> std::slice::Iter<'a, Item> {
+        self.data.iter()
+    }
+}
+
+impl<'a, Item: Scalar> Iterable<'a, Item, std::slice::Iter<'a, Item>>
+    for DynamicMatrixFortranLayout<Item>
+{
+    fn iter(&'a self) -> std::slice::Iter<'a, Item> {
+        self.data.iter()
+    }
+}
+
+impl<'a, Item: Scalar> IterableMut<'a, Item, std::slice::IterMut<'a, Item>>
+    for DynamicMatrixCLayout<Item>
+{
+    fn iter_mut(&'a mut self) -> std::slice::IterMut<'a, Item> {
+        self.data.iter_mut()
+    }
+}
+
+impl<'a, Item: Scalar> IterableMut<'a, Item, std::slice::IterMut<'a, Item>>
+    for DynamicMatrixFortranLayout<Item>
+{
+    fn iter_mut(&'a mut self) -> std::slice::IterMut<'a, Item> {
+        self.data.iter_mut()
+    }
+}
+
+
+impl<Item: Scalar> SafeRandomAccess for DynamicMatrixCLayout<Item> {
     type Output = Item;
 
     #[inline]
@@ -64,7 +108,7 @@ impl<Item: Scalar> SafeRandomAccess for BaseMatrixCLayout<Item> {
     }
 }
 
-impl<Item: Scalar> UnsafeRandomAccess for BaseMatrixCLayout<Item> {
+impl<Item: Scalar> UnsafeRandomAccess for DynamicMatrixCLayout<Item> {
     type Output = Item;
 
     #[inline]
@@ -73,7 +117,7 @@ impl<Item: Scalar> UnsafeRandomAccess for BaseMatrixCLayout<Item> {
     }
 }
 
-impl<Item: Scalar> SafeMutableRandomAccess for BaseMatrixCLayout<Item> {
+impl<Item: Scalar> SafeMutableRandomAccess for DynamicMatrixCLayout<Item> {
     type Output = Item;
 
     #[inline]
@@ -82,7 +126,7 @@ impl<Item: Scalar> SafeMutableRandomAccess for BaseMatrixCLayout<Item> {
     }
 }
 
-impl<Item: Scalar> UnsafeMutableRandomAccess for BaseMatrixCLayout<Item> {
+impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixCLayout<Item> {
     type Output = Item;
 
     #[inline]
@@ -91,8 +135,7 @@ impl<Item: Scalar> UnsafeMutableRandomAccess for BaseMatrixCLayout<Item> {
     }
 }
 
-
-impl<Item: Scalar> UnsafeRandomAccess for BaseMatrixFortranLayout<Item> {
+impl<Item: Scalar> UnsafeRandomAccess for DynamicMatrixFortranLayout<Item> {
     type Output = Item;
 
     #[inline]
@@ -101,7 +144,7 @@ impl<Item: Scalar> UnsafeRandomAccess for BaseMatrixFortranLayout<Item> {
     }
 }
 
-impl<Item: Scalar> SafeRandomAccess for BaseMatrixFortranLayout<Item> {
+impl<Item: Scalar> SafeRandomAccess for DynamicMatrixFortranLayout<Item> {
     type Output = Item;
 
     #[inline]
@@ -110,7 +153,7 @@ impl<Item: Scalar> SafeRandomAccess for BaseMatrixFortranLayout<Item> {
     }
 }
 
-impl<Item: Scalar> UnsafeMutableRandomAccess for BaseMatrixFortranLayout<Item> {
+impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> {
     type Output = Item;
 
     #[inline]
@@ -119,7 +162,7 @@ impl<Item: Scalar> UnsafeMutableRandomAccess for BaseMatrixFortranLayout<Item> {
     }
 }
 
-impl<Item: Scalar> SafeMutableRandomAccess for BaseMatrixFortranLayout<Item> {
+impl<Item: Scalar> SafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> {
     type Output = Item;
 
     #[inline]
