@@ -9,8 +9,6 @@ pub struct DynamicMatrixCLayout<Item: Scalar> {
     dim: (usize, usize),
 }
 
-
-
 /// Base matrix with Fortran Layout
 pub struct DynamicMatrixFortranLayout<Item: Scalar> {
     data: Vec<Item>,
@@ -69,46 +67,18 @@ impl<Item: Scalar> SizeType for DynamicMatrixFortranLayout<Item> {
 
 }
 
-impl<'a, Item: Scalar> Iterable<'a, Item, CopiedSliceIterator<'a, Item>>
-    for DynamicMatrixCLayout<Item>
-{
-    fn iter(&'a self) -> CopiedSliceIterator<'a, Item> {
-        self.data.iter().copied()
-    }
-}
-
-impl<'a, Item: Scalar> Iterable<'a, Item, CopiedSliceIterator<'a, Item>>
-    for DynamicMatrixFortranLayout<Item>
-{
-    fn iter(&'a self) -> CopiedSliceIterator<'a, Item> {
-        self.data.iter().copied()
-    }
-}
-
-impl<'a, Item: Scalar> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
-    for DynamicMatrixCLayout<Item>
-{
-    fn iter_mut(&'a mut self) -> SliceIteratorMut<'a, Item> {
-        self.data.iter_mut()
-    }
-}
-
-impl<'a, Item: Scalar> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
-    for DynamicMatrixFortranLayout<Item>
-{
-    fn iter_mut(&'a mut self) -> SliceIteratorMut<'a, Item> {
-        self.data.iter_mut()
-    }
-}
-
-
 impl<Item: Scalar> SafeRandomAccess for DynamicMatrixCLayout<Item> {
     type Output = Item;
 
     #[inline]
     fn get(&self, row: usize, col: usize) -> Self::Output {
-        self.data.get(row * self.dim.1 + col).unwrap().clone()
+        *self.data.get(row * self.dim.1 + col).unwrap()
     }
+    #[inline]
+    fn get1d(&self, index: usize) -> Self::Output {
+        *self.data.get(index).unwrap()
+    }
+
 }
 
 impl<Item: Scalar> UnsafeRandomAccess for DynamicMatrixCLayout<Item> {
@@ -116,7 +86,11 @@ impl<Item: Scalar> UnsafeRandomAccess for DynamicMatrixCLayout<Item> {
 
     #[inline]
     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
-        self.data.get_unchecked(row * self.dim.1 + col).clone()
+        *self.data.get_unchecked(row * self.dim.1 + col)
+    }
+    #[inline]
+    unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
+        *self.data.get_unchecked(index)
     }
 }
 
@@ -127,6 +101,10 @@ impl<Item: Scalar> SafeMutableRandomAccess for DynamicMatrixCLayout<Item> {
     fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
         self.data.get_mut(row * self.dim.1 + col).unwrap()
     }
+    #[inline]
+    fn get1d_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.data.get_mut(index).unwrap()
+    }
 }
 
 impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixCLayout<Item> {
@@ -135,6 +113,10 @@ impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixCLayout<Item> {
     #[inline]
     unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
         self.data.get_unchecked_mut(row * self.dim.1 + col)
+    }
+    #[inline]
+    unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.data.get_unchecked_mut(index)
     }
 }
 
@@ -145,6 +127,11 @@ impl<Item: Scalar> UnsafeRandomAccess for DynamicMatrixFortranLayout<Item> {
     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
         self.data.get_unchecked(col * self.dim.0 + row).clone()
     }
+    #[inline]
+    unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
+        *self.data.get_unchecked(index)
+    }
+
 }
 
 impl<Item: Scalar> SafeRandomAccess for DynamicMatrixFortranLayout<Item> {
@@ -152,8 +139,13 @@ impl<Item: Scalar> SafeRandomAccess for DynamicMatrixFortranLayout<Item> {
 
     #[inline]
     fn get(&self, row: usize, col: usize) -> Self::Output {
-        self.data.get(col * self.dim.0 + row).unwrap().clone()
+        *self.data.get(col * self.dim.0 + row).unwrap()
     }
+    #[inline]
+    fn get1d(&self, index: usize) -> Self::Output {
+        *self.data.get(index).unwrap()
+    }
+
 }
 
 impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> {
@@ -163,6 +155,11 @@ impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixFortranLayout<Item
     unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
         self.data.get_unchecked_mut(col * self.dim.0 + row)
     }
+    #[inline]
+    unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.data.get_unchecked_mut(index)
+    }
+
 }
 
 impl<Item: Scalar> SafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> {
@@ -171,5 +168,9 @@ impl<Item: Scalar> SafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> 
     #[inline]
     fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
         self.data.get_mut(col * self.dim.0 + row).unwrap()
+    }
+    #[inline]
+    fn get1d_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.data.get_mut(index).unwrap()
     }
 }

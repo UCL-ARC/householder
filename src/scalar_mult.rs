@@ -60,9 +60,15 @@ where
 {
     type Output = Item;
 
+    #[inline]
     fn get(&self, row: usize, col: usize) -> Self::Output {
         self.1 * self.0.get(row, col)
     }
+    #[inline]
+    fn get1d(&self, index: usize) -> Self::Output {
+        self.1 * self.0.get1d(index)
+    }
+
 }
 
 impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess
@@ -75,8 +81,13 @@ where
 {
     type Output = Item;
 
+    #[inline]
     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
-        self.1 * self.0.get(row, col)
+        self.1 * self.0.get_unchecked(row, col)
+    }
+    #[inline]
+    unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
+        self.1 * self.0.get1d_unchecked(index)
     }
 }
 

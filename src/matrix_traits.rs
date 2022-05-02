@@ -23,6 +23,9 @@ pub trait SafeRandomAccess {
 
     /// Get the element at position (row, col) of the matrix.
     fn get(&self, row: usize, col: usize) -> Self::Output;
+
+    /// Get element from matrix linearized as 1d array (result depends on memory layout).
+    fn get1d(&self, elem: usize) -> Self::Output;
 }
 
 /// Bounds checked mutable random access for matrices.
@@ -31,6 +34,9 @@ pub trait SafeMutableRandomAccess {
 
     /// Get mutable reference to element at position (row, col) of the matrix.
     fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Output;
+    /// Get mutable reference from matrix linearized as 1d array (result depends on memory layout).
+    fn get1d_mut(&mut self, elem: usize) -> &mut Self::Output;
+
 }
 
 /// Random access without bounds check for matrices.
@@ -38,6 +44,8 @@ pub trait UnsafeRandomAccess {
     type Output: Scalar;
 
     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output;
+    unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output;
+
 }
 
 /// Get mutable access to element without bounds check.
@@ -45,6 +53,8 @@ pub trait UnsafeMutableRandomAccess {
     type Output: Scalar;
 
     unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Self::Output;
+    unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output;
+
 }
 
 /// General trait specifying random access
