@@ -2,10 +2,12 @@
 //!
 
 use crate::base_matrix::*;
-//use crate::matrix_operators::*;
-use crate::matrix_traits::*;
 use crate::iterators::*;
+use crate::mat;
+use crate::matrix_traits::*;
+use crate::scalar_mult::ScalarMult;
 use cauchy::Scalar;
+use std::iter::Copied;
 use std::marker::PhantomData;
 
 /// A matrix is a simple enum struct.
@@ -45,6 +47,36 @@ where
             PhantomData,
         )
     }
+}
+
+impl<'a, Item, MatImpl, Iter> Matrix<'a, Item, MatImpl, CLayout, MatrixD, Iter>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, CLayout, MatrixD, Iter>,
+    Iter: Iterator<Item = Item>,
+{
+    // pub fn eval(
+    //     &'a self,
+    // ) -> Matrix<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD, CopiedSliceIterator<Item>>
+    // {
+    //     let (row, col) = self.dim();
+    //     let res = {
+    //         let mut res =       
+    //         Matrix::<
+    //         Item,
+    //         DynamicMatrixCLayout<Item>,
+    //         CLayout,
+    //         MatrixD,
+    //         CopiedSliceIterator<'static, Item>,
+    //     >::from_dimensions(row, col);
+    //     for res in res.iter_mut() {
+    //         *res = num::cast::<f64, Item>(0.0).unwrap();
+    //     }
+    //     res
+    // };
+
+    //     res
+    // }
 }
 
 // impl<'a, Item, MatImpl, Iter>
@@ -144,7 +176,6 @@ where
     Iter: Iterator<Item = Item>,
 {
     type S = Size;
-
 }
 
 impl<'a, Item, MatImpl, Layout, Size, Iter> LayoutType
@@ -157,7 +188,6 @@ where
     Iter: Iterator<Item = Item>,
 {
     type L = Layout;
-
 }
 
 impl<'a, Item, MatImpl, Layout, Size, Iter> Iterable<'a, Item, Iter>
@@ -169,15 +199,44 @@ where
     Size: SizeIdentifier,
     Iter: Iterator<Item = Item>,
 {
-    
     fn iter(&'a self) -> Iter {
         self.0.iter()
     }
-
 }
 
+impl<'a, Item> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
+    for Matrix<
+        'a,
+        Item,
+        DynamicMatrixCLayout<Item>,
+        CLayout,
+        MatrixD,
+        CopiedSliceIterator<'a, Item>,
+    >
+where
+    Item: Scalar,
+{
+    fn iter_mut(&'a mut self) -> SliceIteratorMut<Item> {
+        self.0.iter_mut()
+    }
+}
 
-
+impl<'a, Item> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
+    for Matrix<
+        'a,
+        Item,
+        DynamicMatrixFortranLayout<Item>,
+        FortranLayout,
+        MatrixD,
+        CopiedSliceIterator<'a, Item>,
+    >
+where
+    Item: Scalar,
+{
+    fn iter_mut(&'a mut self) -> SliceIteratorMut<Item> {
+        self.0.iter_mut()
+    }
+}
 
 /// A MatrixRef is like a matrix but holds a reference to an implementation.
 pub struct MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>(
@@ -203,15 +262,15 @@ where
     Size: SizeIdentifier,
     Iter: Iterator<Item = Item>,
 {
-    pub fn new(op: &'a MatImpl) -> Self {
-        Self(
+    pub fn new(op: &'a MatImpl) -> Matrix<'a, Item, Self, Layout, Size, Iter> {
+        Matrix::new(Self(
             op,
             PhantomData,
             PhantomData,
             PhantomData,
             PhantomData,
             PhantomData,
-        )
+        ))
     }
 }
 
@@ -271,7 +330,6 @@ where
     Iter: Iterator<Item = Item>,
 {
     type S = Size;
-
 }
 
 impl<'a, Item, MatImpl, Layout, Size, Iter> LayoutType
@@ -284,7 +342,6 @@ where
     Iter: Iterator<Item = Item>,
 {
     type L = Layout;
-
 }
 
 impl<'a, Item, MatImpl, Layout, Size, Iter> Iterable<'a, Item, Iter>
@@ -296,11 +353,9 @@ where
     Size: SizeIdentifier,
     Iter: Iterator<Item = Item>,
 {
-    
     fn iter(&'a self) -> Iter {
         self.0.iter()
     }
-
 }
 
 //     // /// Evaluate a matrix into a new base matrix
@@ -495,3 +550,68 @@ where
 
 //     }
 // }
+
+impl<'a, MatImpl, Layout, Size, Iter> std::ops::Mul<Matrix<'a, f64, MatImpl, Layout, Size, Iter>>
+    for f64
+where
+    MatImpl: MatrixTrait<'a, f64, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = f64>,
+{
+    type Output = Matrix<
+        'a,
+        f64,
+        ScalarMult<'a, f64, Matrix<'a, f64, MatImpl, Layout, Size, Iter>, Layout, Size, Iter>,
+        Layout,
+        Size,
+        ScalarMultIterator<'a, f64, Iter>,
+    >;
+
+    fn mul(self, rhs: Matrix<'a, f64, MatImpl, Layout, Size, Iter>) -> Self::Output {
+        Matrix::new(ScalarMult::new(rhs, self))
+    }
+}
+
+impl<'a, MatImpl, Layout, Size, Iter>
+    std::ops::Mul<&'a Matrix<'a, f64, MatImpl, Layout, Size, Iter>> for f64
+where
+    MatImpl: MatrixTrait<'a, f64, Layout, Size, Iter>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Iter: Iterator<Item = f64>,
+{
+    type Output = Matrix<
+        'a,
+        f64,
+        ScalarMult<
+            'a,
+            f64,
+            Matrix<
+                'a,
+                f64,
+                MatrixRef<
+                    'a,
+                    f64,
+                    Matrix<'a, f64, MatImpl, Layout, Size, Iter>,
+                    Layout,
+                    Size,
+                    Iter,
+                >,
+                Layout,
+                Size,
+                Iter,
+            >,
+            Layout,
+            Size,
+            Iter,
+        >,
+        Layout,
+        Size,
+        ScalarMultIterator<'a, f64, Iter>,
+    >;
+
+    fn mul(self, rhs: &'a Matrix<'a, f64, MatImpl, Layout, Size, Iter>) -> Self::Output {
+        Matrix::new(ScalarMult::new(MatrixRef::new(rhs), self))
+    }
+}

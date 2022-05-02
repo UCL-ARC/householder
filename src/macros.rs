@@ -3,7 +3,10 @@
 /// Generate a new matrix with C Layout
 #[macro_export]
 macro_rules! mat {
-    ($ScalarType:ty, $dim:expr, CLayout) => {
+
+        ($ScalarType:ty, $dim:expr, CLayout) =>
+
+    {
         crate::matrix::Matrix::<
             '_,
             $ScalarType,
@@ -15,6 +18,7 @@ macro_rules! mat {
     };
 
     ($ScalarType:ty, $dim:expr, FortranLayout) => {
+
         crate::matrix::Matrix::<
             '_,
             $ScalarType,
