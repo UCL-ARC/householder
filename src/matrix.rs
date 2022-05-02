@@ -2,40 +2,34 @@
 //!
 
 use crate::base_matrix::*;
-use crate::iterators::*;
-use crate::mat;
 use crate::matrix_traits::*;
 use crate::scalar_mult::ScalarMult;
 use cauchy::Scalar;
-use std::iter::Copied;
 use std::marker::PhantomData;
 
 /// A matrix is a simple enum struct.
 /// This can be a base matrix or something
 /// representing the sum, product, etc. on
 /// matrices.
-pub struct Matrix<'a, Item, MatImpl, Layout, Size, Iter>(
+pub struct Matrix<'a, Item, MatImpl, Layout, Size>(
     MatImpl,
     PhantomData<Item>,
     PhantomData<Layout>,
     PhantomData<Size>,
-    PhantomData<Iter>,
     PhantomData<&'a ()>,
 )
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>;
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>;
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     pub fn new(op: MatImpl) -> Self {
         Self(
@@ -44,16 +38,14 @@ where
             PhantomData,
             PhantomData,
             PhantomData,
-            PhantomData,
         )
     }
 }
 
-impl<'a, Item, MatImpl, Iter> Matrix<'a, Item, MatImpl, CLayout, MatrixD, Iter>
+impl<'a, Item, MatImpl> Matrix<'a, Item, MatImpl, CLayout, MatrixD>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, CLayout, MatrixD, Iter>,
-    Iter: Iterator<Item = Item>,
+    MatImpl: MatrixTrait<'a, Item, CLayout, MatrixD>,
 {
     // pub fn eval(
     //     &'a self,
@@ -96,7 +88,7 @@ where
 // }
 
 impl<'a, Item: Scalar>
-    Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD, CopiedSliceIterator<'a, Item>>
+    Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>
 {
     /// Create a new matrix with dimensions (rows, cols) using C Layout
     pub fn from_dimensions(rows: usize, cols: usize) -> Self {
@@ -110,8 +102,7 @@ impl<'a, Item: Scalar>
         Item,
         DynamicMatrixFortranLayout<Item>,
         FortranLayout,
-        MatrixD,
-        CopiedSliceIterator<'a, Item>,
+        MatrixD
     >
 {
     /// Create a new matrix with dimensions (rows, cols) using Fortran Layout
@@ -120,28 +111,26 @@ impl<'a, Item: Scalar>
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> Dimensions
-    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> Dimensions
+    for Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> SafeRandomAccess
-    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> SafeRandomAccess
+    for Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type Output = Item;
 
@@ -150,14 +139,13 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> UnsafeRandomAccess
-    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess
+    for Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type Output = Item;
 
@@ -166,106 +154,52 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> SizeType
-    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> SizeType
+    for Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type S = Size;
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> LayoutType
-    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> LayoutType
+    for Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type L = Layout;
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> Iterable<'a, Item, Iter>
-    for Matrix<'a, Item, MatImpl, Layout, Size, Iter>
-where
-    Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
-    Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-{
-    fn iter(&'a self) -> Iter {
-        self.0.iter()
-    }
-}
-
-impl<'a, Item> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
-    for Matrix<
-        'a,
-        Item,
-        DynamicMatrixCLayout<Item>,
-        CLayout,
-        MatrixD,
-        CopiedSliceIterator<'a, Item>,
-    >
-where
-    Item: Scalar,
-{
-    fn iter_mut(&'a mut self) -> SliceIteratorMut<Item> {
-        self.0.iter_mut()
-    }
-}
-
-impl<'a, Item> IterableMut<'a, Item, SliceIteratorMut<'a, Item>>
-    for Matrix<
-        'a,
-        Item,
-        DynamicMatrixFortranLayout<Item>,
-        FortranLayout,
-        MatrixD,
-        CopiedSliceIterator<'a, Item>,
-    >
-where
-    Item: Scalar,
-{
-    fn iter_mut(&'a mut self) -> SliceIteratorMut<Item> {
-        self.0.iter_mut()
-    }
-}
-
 /// A MatrixRef is like a matrix but holds a reference to an implementation.
-pub struct MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>(
+pub struct MatrixRef<'a, Item, MatImpl, Layout, Size>(
     &'a MatImpl,
     PhantomData<Item>,
     PhantomData<Layout>,
     PhantomData<Size>,
-    PhantomData<Iter>,
     PhantomData<&'a ()>,
 )
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>;
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>;
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> MatrixRef<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
-    pub fn new(op: &'a MatImpl) -> Matrix<'a, Item, Self, Layout, Size, Iter> {
+    pub fn new(op: &'a MatImpl) -> Matrix<'a, Item, Self, Layout, Size> {
         Matrix::new(Self(
             op,
-            PhantomData,
             PhantomData,
             PhantomData,
             PhantomData,
@@ -274,28 +208,26 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> Dimensions
-    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> Dimensions
+    for MatrixRef<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> SafeRandomAccess
-    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> SafeRandomAccess
+    for MatrixRef<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type Output = Item;
 
@@ -304,15 +236,13 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> UnsafeRandomAccess
-    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess
+    for MatrixRef<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-{
+    Size: SizeIdentifier {
     type Output = Item;
 
     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
@@ -320,43 +250,28 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> SizeType
-    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> SizeType
+    for MatrixRef<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type S = Size;
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> LayoutType
-    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> LayoutType
+    for MatrixRef<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type L = Layout;
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> Iterable<'a, Item, Iter>
-    for MatrixRef<'a, Item, MatImpl, Layout, Size, Iter>
-where
-    Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
-    Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-{
-    fn iter(&'a self) -> Iter {
-        self.0.iter()
-    }
-}
 
 //     // /// Evaluate a matrix into a new base matrix
 //     // pub fn eval(&self) -> Matrix<Item, BaseMatrixCLayout<Item>> {
@@ -551,35 +466,32 @@ where
 //     }
 // }
 
-impl<'a, MatImpl, Layout, Size, Iter> std::ops::Mul<Matrix<'a, f64, MatImpl, Layout, Size, Iter>>
+impl<'a, MatImpl, Layout, Size> std::ops::Mul<Matrix<'a, f64, MatImpl, Layout, Size>>
     for f64
 where
-    MatImpl: MatrixTrait<'a, f64, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, f64, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = f64>,
 {
     type Output = Matrix<
         'a,
         f64,
-        ScalarMult<'a, f64, Matrix<'a, f64, MatImpl, Layout, Size, Iter>, Layout, Size, Iter>,
+        ScalarMult<'a, f64, Matrix<'a, f64, MatImpl, Layout, Size>, Layout, Size>,
         Layout,
         Size,
-        ScalarMultIterator<'a, f64, Iter>,
     >;
 
-    fn mul(self, rhs: Matrix<'a, f64, MatImpl, Layout, Size, Iter>) -> Self::Output {
+    fn mul(self, rhs: Matrix<'a, f64, MatImpl, Layout, Size>) -> Self::Output {
         Matrix::new(ScalarMult::new(rhs, self))
     }
 }
 
-impl<'a, MatImpl, Layout, Size, Iter>
-    std::ops::Mul<&'a Matrix<'a, f64, MatImpl, Layout, Size, Iter>> for f64
+impl<'a, MatImpl, Layout, Size>
+    std::ops::Mul<&'a Matrix<'a, f64, MatImpl, Layout, Size>> for f64
 where
-    MatImpl: MatrixTrait<'a, f64, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, f64, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = f64>,
 {
     type Output = Matrix<
         'a,
@@ -593,25 +505,21 @@ where
                 MatrixRef<
                     'a,
                     f64,
-                    Matrix<'a, f64, MatImpl, Layout, Size, Iter>,
+                    Matrix<'a, f64, MatImpl, Layout, Size>,
                     Layout,
                     Size,
-                    Iter,
                 >,
                 Layout,
                 Size,
-                Iter,
             >,
             Layout,
             Size,
-            Iter,
         >,
         Layout,
         Size,
-        ScalarMultIterator<'a, f64, Iter>,
     >;
 
-    fn mul(self, rhs: &'a Matrix<'a, f64, MatImpl, Layout, Size, Iter>) -> Self::Output {
+    fn mul(self, rhs: &'a Matrix<'a, f64, MatImpl, Layout, Size>) -> Self::Output {
         Matrix::new(ScalarMult::new(MatrixRef::new(rhs), self))
     }
 }

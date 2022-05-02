@@ -267,13 +267,11 @@ pub trait MatrixTrait<
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 >:
     RandomAccess<Item>
     + Dimensions
     + LayoutType<L = Layout>
     + SizeType<S = Size>
-    + Iterable<'a, Item, Iter>
 {
 }
 
@@ -283,46 +281,36 @@ pub trait MatrixMutTrait<
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-    IterMut: Iterator<Item = &'a mut Item>
 >:
     RandomAccess<Item>
     + Dimensions
     + LayoutType<L = Layout>
     + SizeType<S = Size>
-    + Iterable<'a, Item, Iter>
-    + IterableMut<'a, Item, IterMut>
 {
 }
 
 // Implement `MatrixTrait` for any eligible object.
-impl<'a, Item, Layout, Size, Mat, Iter> MatrixTrait<'a, Item, Layout, Size, Iter> for Mat
+impl<'a, Item, Layout, Size, Mat> MatrixTrait<'a, Item, Layout, Size> for Mat
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
     Mat: RandomAccess<Item>
         + Dimensions
         + LayoutType<L = Layout>
         + SizeType<S = Size>
-        + Iterable<'a, Item, Iter>,
 {
 }
 
 // Implement `MatrixTraitMut` for any eligible object.
-impl<'a, Item, Layout, Size, Mat, Iter, IterMut> MatrixMutTrait<'a, Item, Layout, Size, Iter, IterMut> for Mat
+impl<'a, Item, Layout, Size, Mat> MatrixMutTrait<'a, Item, Layout, Size> for Mat
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-    IterMut: Iterator<Item = &'a mut Item>,
     Mat: RandomAccessMut<Item>
         + Dimensions
         + LayoutType<L = Layout>
         + SizeType<S = Size>
-        + Iterable<'a, Item, Iter>
-        + IterableMut<'a, Item, IterMut>,
 {
 }

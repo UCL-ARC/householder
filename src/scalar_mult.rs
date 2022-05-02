@@ -1,33 +1,29 @@
 //! Multiplication of a matrix with a scalar
 use cauchy::Scalar;
 use crate::matrix_traits::*;
-use crate::iterators::*;
 use std::marker::PhantomData;
 
 
-pub struct ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>(
+pub struct ScalarMult<'a, Item, MatImpl, Layout, Size>(
     MatImpl,
     Item, 
     PhantomData<Item>,
     PhantomData<Layout>,
     PhantomData<Size>,
-    PhantomData<Iter>,
     PhantomData<&'a ()>,
 )
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>;
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>;
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> ScalarMult<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     pub fn new(op: MatImpl, factor: Item) -> Self {
         Self(
@@ -37,33 +33,30 @@ where
             PhantomData,
             PhantomData,
             PhantomData,
-            PhantomData,
         )
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> Dimensions
-    for ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> Dimensions
+    for ScalarMult<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> SafeRandomAccess
-    for ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> SafeRandomAccess
+    for ScalarMult<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type Output = Item;
 
@@ -72,14 +65,13 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> UnsafeRandomAccess
-    for ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess
+    for ScalarMult<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type Output = Item;
 
@@ -88,45 +80,26 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> SizeType
-    for ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> SizeType
+    for ScalarMult<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type S = Size;
 
 }
 
-impl<'a, Item, MatImpl, Layout, Size, Iter> LayoutType
-    for ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>
+impl<'a, Item, MatImpl, Layout, Size> LayoutType
+    for ScalarMult<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
 {
     type L = Layout;
 
 }
-
-impl<'a, Item, MatImpl, Layout, Size, Iter> Iterable<'a, Item, ScalarMultIterator<'a, Item, Iter>>
-    for ScalarMult<'a, Item, MatImpl, Layout, Size, Iter>
-where
-    Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size, Iter>,
-    Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Iter: Iterator<Item = Item>,
-{
-    
-    fn iter(&'a self) -> ScalarMultIterator<'a, Item, Iter>{
-        ScalarMultIterator::new(self.1, self.0.iter())
-    }
-
-}
-
