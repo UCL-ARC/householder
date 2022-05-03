@@ -2,164 +2,372 @@
 //!
 
 use crate::base_matrix::*;
-use crate::matrix_operators::*;
+use crate::iterators::*;
 use crate::matrix_traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
-pub enum MemoryLayout {
-    C,
-    F,
-    CUSTOM,
-}
+pub type MatrixFromRef<'a, Item, MatImpl, Layout, Size> = Matrix<
+    'a,
+    Item,
+    MatrixRef<'a, Item, Matrix<'a, Item, MatImpl, Layout, Size>, Layout, Size>,
+    Layout,
+    Size,
+>;
 
 /// A matrix is a simple enum struct.
 /// This can be a base matrix or something
 /// representing the sum, product, etc. on
 /// matrices.
-pub struct Matrix<Item, T>(PhantomData<Item>, T)
+pub struct Matrix<'a, Item, MatImpl, Layout, Size>(
+    MatImpl,
+    PhantomData<Item>,
+    PhantomData<Layout>,
+    PhantomData<Size>,
+    PhantomData<&'a ()>,
+)
 where
     Item: Scalar,
-    T: RandomAccess<Item> + Dimensions;
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>;
 
-impl<Item, T> Matrix<Item, T>
+impl<'a, Item, MatImpl, Layout, Size> Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    T: RandomAccess<Item> + Dimensions,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
 {
-    /// Create a new Matrix instance for an object behaving like a matrix
-    pub fn new(op: T) -> Self {
-        Matrix::<Item, T>(PhantomData, op)
+    pub fn new(mat: MatImpl) -> Self {
+        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 
-    /// Evaluate a matrix into a new base matrix
-    pub fn eval(&self) -> Matrix<Item, BaseMatrixCLayout<Item>> {
+    /// Return a new iterator that iterates through the matrix in memory order
+    pub fn iter(
+        &self,
+    ) -> MatrixIterator<'a, Item, Matrix<Item, MatImpl, Layout, Size>, Layout, Size> {
+        MatrixIterator::new(self)
+    }
+
+    /// Convert a reference to a matrix into an owned matrix.
+    ///
+    /// The owned matrix itself holds a reference to the original matrix and does
+    /// not allocate new memory. This allows handing over matrices to functions
+    /// that expect a matrix and not a reference to a matrix.
+    pub fn from_ref(
+        mat: &'a Matrix<'a, Item, MatImpl, Layout, Size>,
+    ) -> MatrixFromRef<'a, Item, MatImpl, Layout, Size> {
+        Matrix::new(MatrixRef::new(mat))
+    }
+}
+
+impl<'a, Item, MatImpl> Matrix<'a, Item, MatImpl, CLayout, MatrixD>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, CLayout, MatrixD>,
+{
+    pub fn eval(&self) -> Matrix<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
         let (rows, cols) = self.dim();
-        let mut res = Matrix::<Item, BaseMatrixCLayout<Item>>::from_dimensions(rows, cols);
+        let nelems = rows * cols;
+        let mut res = Matrix::<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>::from_dimensions(
+            rows, cols,
+        );
 
         unsafe {
-            for row_index in 0..rows {
-                for col_index in 0..cols {
-                    *res.get_unchecked_mut(row_index, col_index) =
-                        self.get_unchecked(row_index, col_index);
-                }
+            for index in 0..nelems {
+                *res.get1d_unchecked_mut(index) = self.get1d_unchecked(index);
             }
         }
         res
     }
 }
 
-impl<Item, T> Dimensions for Matrix<Item, T>
+impl<'a, Item, MatImpl> Matrix<'a, Item, MatImpl, FortranLayout, MatrixD>
 where
     Item: Scalar,
-    T: RandomAccess<Item> + Dimensions,
+    MatImpl: MatrixTrait<'a, Item, FortranLayout, MatrixD>,
 {
-    fn dim(&self) -> (usize, usize) {
-        self.1.dim()
+    pub fn eval(&self) -> Matrix<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
+        let (rows, cols) = self.dim();
+        let nelems = rows * cols;
+        let mut res = Matrix::<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>::from_dimensions_f(
+            rows, cols);
+
+        unsafe {
+            for index in 0..nelems {
+                *res.get1d_unchecked_mut(index) = self.get1d_unchecked(index);
+            }
+        }
+        res
     }
 }
 
-impl<Item: Scalar> Matrix<Item, BaseMatrixCLayout<Item>> {
-    /// Create a new matrix with dimensions (rows, cols)
+impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
+    /// Create a new matrix with dimensions (rows, cols) using C Layout
     pub fn from_dimensions(rows: usize, cols: usize) -> Self {
-        Self::new(BaseMatrixCLayout::<Item>::new(rows, cols))
+        Self::new(DynamicMatrixCLayout::<Item>::new(rows, cols))
     }
 }
 
-impl<Item: Scalar> Matrix<Item, BaseMatrixFortranLayout<Item>> {
+impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
     /// Create a new matrix with dimensions (rows, cols) using Fortran Layout
     pub fn from_dimensions_f(rows: usize, cols: usize) -> Self {
-        Self::new(BaseMatrixFortranLayout::<Item>::new(rows, cols))
+        Self::new(DynamicMatrixFortranLayout::<Item>::new(rows, cols))
     }
 }
 
-impl<Item: Scalar> SafeMutableRandomAccess for Matrix<Item, BaseMatrixCLayout<Item>> {
-    type Output = Item;
-
-    fn get_mut(&mut self, row: usize, col: usize) -> &mut Item {
-        self.1.get_mut(row, col)
-    }
-}
-
-impl<Item: Scalar> UnsafeMutableRandomAccess for Matrix<Item, BaseMatrixCLayout<Item>> {
-    type Output = Item;
-
-    unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Item {
-        self.1.get_unchecked_mut(row, col)
-    }
-}
-
-impl<Item: Scalar> SafeMutableRandomAccess for Matrix<Item, BaseMatrixFortranLayout<Item>> {
-    type Output = Item;
-
-    fn get_mut(&mut self, row: usize, col: usize) -> &mut Item {
-        self.1.get_mut(row, col)
-    }
-}
-
-impl<Item: Scalar> UnsafeMutableRandomAccess for Matrix<Item, BaseMatrixFortranLayout<Item>> {
-    type Output = Item;
-
-    unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Item {
-        self.1.get_unchecked_mut(row, col)
-    }
-}
-
-impl<Item, T> SafeRandomAccess for Matrix<Item, T>
+impl<'a, Item, MatImpl, Layout, Size> Dimensions for Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
-    T: RandomAccess<Item> + Dimensions,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    fn dim(&self) -> (usize, usize) {
+        self.0.dim()
+    }
+}
+
+impl<'a, Item, MatImpl, Layout, Size> SafeRandomAccess for Matrix<'a, Item, MatImpl, Layout, Size>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
 {
     type Output = Item;
 
     #[inline]
     fn get(&self, row: usize, col: usize) -> Self::Output {
-        self.1.get(row, col)
+        self.0.get(row, col)
+    }
+    #[inline]
+    fn get1d(&self, index: usize) -> Self::Output {
+        self.0.get1d(index)
     }
 }
 
-impl<Item, T> UnsafeRandomAccess for Matrix<Item, T>
+impl<'a, Item> SafeMutableRandomAccess
+    for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>
 where
     Item: Scalar,
-    T: RandomAccess<Item> + Dimensions,
+{
+    type Output = Item;
+
+    #[inline]
+    fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
+        self.0.get_mut(row, col)
+    }
+    #[inline]
+    fn get1d_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.0.get1d_mut(index)
+    }
+}
+
+impl<'a, Item> SafeMutableRandomAccess
+    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
+where
+    Item: Scalar,
+{
+    type Output = Item;
+
+    #[inline]
+    fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
+        self.0.get_mut(row, col)
+    }
+    #[inline]
+    fn get1d_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.0.get1d_mut(index)
+    }
+}
+
+impl<'a, Item> UnsafeMutableRandomAccess
+    for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>
+where
+    Item: Scalar,
+{
+    type Output = Item;
+
+    #[inline]
+    unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
+        self.0.get_unchecked_mut(row, col)
+    }
+    #[inline]
+    unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.0.get1d_unchecked_mut(index)
+    }
+}
+
+impl<'a, Item> UnsafeMutableRandomAccess
+    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
+where
+    Item: Scalar,
+{
+    type Output = Item;
+
+    #[inline]
+    unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
+        self.0.get_unchecked_mut(row, col)
+    }
+    #[inline]
+    unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.0.get1d_unchecked_mut(index)
+    }
+}
+
+impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess for Matrix<'a, Item, MatImpl, Layout, Size>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
 {
     type Output = Item;
 
     #[inline]
     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
-        self.1.get_unchecked(row, col)
+        self.0.get_unchecked(row, col)
+    }
+    #[inline]
+    unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
+        self.0.get1d_unchecked(index)
     }
 }
 
-impl<'a, Item, T> std::ops::Mul<Item> for &'a Matrix<Item, T>
-where 
+impl<'a, Item, MatImpl, Layout, Size> SizeType for Matrix<'a, Item, MatImpl, Layout, Size>
+where
     Item: Scalar,
-    T: RandomAccess<Item> + Dimensions,
-    {
-        type Output = Matrix<Item, ScalarMult<'a, Item, Matrix<Item, T>>>;
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    type S = Size;
+}
 
-        fn mul(self, rhs: Item) -> Self::Output {
-            Matrix::new(
-                ScalarMult::new(rhs, self)
-            )
-        }
+impl<'a, Item, MatImpl, Layout, Size> LayoutType for Matrix<'a, Item, MatImpl, Layout, Size>
+where
+    Item: Scalar,
+    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    type L = Layout;
+}
 
+/// A MatrixRef is like a matrix but holds a reference to an implementation.
+pub struct MatrixRef<'a, Item, Mat, Layout, Size>(
+    &'a Mat,
+    PhantomData<Item>,
+    PhantomData<Layout>,
+    PhantomData<Size>,
+    PhantomData<&'a ()>,
+)
+where
+    Item: Scalar,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+    Mat: MatrixTrait<'a, Item, Layout, Size>;
+
+impl<'a, Item, Mat, Layout, Size> MatrixRef<'a, Item, Mat, Layout, Size>
+where
+    Item: Scalar,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    pub fn new(mat: &'a Mat) -> Self {
+        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
+}
 
-    #[cfg(test)]
-    mod test {
-    
-        use super::*;
-        use crate::mat;
-    
-        #[test]
-        pub fn test_scalar_mult() {
-            let mut mat = mat![f64, (2, 3)];
-            *mat.get_mut(1, 1) = 2.0;
-            let prod = &mat * 5.0;
-            let result = prod.eval();
-    
-            assert_eq!(result.get(1, 1), 10.0);
-        }
+impl<'a, Item, Mat, Layout, Size> Dimensions for MatrixRef<'a, Item, Mat, Layout, Size>
+where
+    Item: Scalar,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    fn dim(&self) -> (usize, usize) {
+        self.0.dim()
     }
-    
+}
+
+impl<'a, Item, Mat, Layout, Size> SafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, Size>
+where
+    Item: Scalar,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    type Output = Item;
+
+    #[inline]
+    fn get(&self, row: usize, col: usize) -> Self::Output {
+        self.0.get(row, col)
+    }
+    #[inline]
+    fn get1d(&self, index: usize) -> Self::Output {
+        self.0.get1d(index)
+    }
+}
+
+impl<'a, Item, Mat, Layout, Size> UnsafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, Size>
+where
+    Item: Scalar,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    type Output = Item;
+
+    #[inline]
+    unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
+        self.0.get_unchecked(row, col)
+    }
+    #[inline]
+    unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
+        self.0.get1d_unchecked(index)
+    }
+}
+
+impl<'a, Item, Mat, Layout, Size> SizeType for MatrixRef<'a, Item, Mat, Layout, Size>
+where
+    Item: Scalar,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    type S = Size;
+}
+
+impl<'a, Item, Mat, Layout, Size> LayoutType for MatrixRef<'a, Item, Mat, Layout, Size>
+where
+    Item: Scalar,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Layout: LayoutIdentifier,
+    Size: SizeIdentifier,
+{
+    type L = Layout;
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+    use crate::mat;
+
+    #[test]
+    fn scalar_mult() {
+        let mut mat1 = mat![f64, (2, 3), CLayout];
+        let mut mat2 = mat![f64, (2, 3), CLayout];
+
+
+        *mat1.get_mut(1, 2) = 2.0;
+        *mat2.get_mut(1, 2) = 3.0;
+
+        let res = 5.0 * &mat1 + mat2;
+
+        assert_eq!(res.get(1, 2), 13.0);
+    }
+}
