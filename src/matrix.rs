@@ -15,6 +15,9 @@ pub type MatrixFromRef<'a, Item, MatImpl, Layout, Size> = Matrix<
     Size,
 >;
 
+pub type CMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>;
+pub type FMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>;
+
 /// A matrix is a simple enum struct.
 /// This can be a base matrix or something
 /// representing the sum, product, etc. on
@@ -91,7 +94,7 @@ where
     pub fn eval(&self) -> Matrix<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
         let (rows, cols) = self.dim();
         let nelems = rows * cols;
-        let mut res = Matrix::<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>::from_dimensions_f(
+        let mut res = Matrix::<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>::from_dimensions(
             rows, cols);
 
         unsafe {
@@ -112,10 +115,48 @@ impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, Mat
 
 impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
     /// Create a new matrix with dimensions (rows, cols) using Fortran Layout
-    pub fn from_dimensions_f(rows: usize, cols: usize) -> Self {
+    pub fn from_dimensions(rows: usize, cols: usize) -> Self {
         Self::new(DynamicMatrixFortranLayout::<Item>::new(rows, cols))
     }
 }
+
+impl<'a, Item: Scalar> Pointer for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
+    type Item = Item;
+
+    fn as_ptr(&self) -> *const Self::Item {
+        self.0.as_ptr()
+    }
+}
+
+impl<'a, Item: Scalar> Pointer
+    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
+{
+    type Item = Item;
+
+    fn as_ptr(&self) -> *const Self::Item {
+        self.0.as_ptr()
+    }
+}
+
+impl<'a, Item: Scalar> PointerMut for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
+    type Item = Item;
+
+    fn as_mut_ptr(&mut self) -> *mut Self::Item {
+        self.0.as_mut_ptr()
+    }
+}
+
+impl<'a, Item: Scalar> PointerMut
+    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
+{
+    type Item = Item;
+
+    fn as_mut_ptr(&mut self) -> *mut Self::Item {
+        self.0.as_mut_ptr()
+    }
+}
+
+
 
 impl<'a, Item, MatImpl, Layout, Size> Dimensions for Matrix<'a, Item, MatImpl, Layout, Size>
 where
@@ -361,7 +402,6 @@ mod test {
     fn scalar_mult() {
         let mut mat1 = mat![f64, (2, 3), CLayout];
         let mut mat2 = mat![f64, (2, 3), CLayout];
-
 
         *mat1.get_mut(1, 2) = 2.0;
         *mat2.get_mut(1, 2) = 3.0;

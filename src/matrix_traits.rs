@@ -299,6 +299,20 @@ pub trait MatrixMutTrait<
 {
 }
 
+/// Access to a raw pointer containing the data
+pub trait Pointer {
+    type Item: Scalar;
+
+    fn as_ptr(&self) -> *const Self::Item;
+}
+
+/// Mutable access to a raw pointer cointaing the data
+pub trait PointerMut {
+    type Item: Scalar;
+
+    fn as_mut_ptr(&mut self) -> *mut Self::Item;
+}
+
 // Implement `MatrixTrait` for any eligible object.
 impl<'a, Item, Layout, Size, Mat> MatrixTrait<'a, Item, Layout, Size> for Mat
 where

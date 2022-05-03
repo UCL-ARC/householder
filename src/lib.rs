@@ -8,3 +8,4 @@ pub mod macros;
 pub mod iterators;
 pub mod scalar_mult;
 pub mod addition;
+pub mod matrix_multiply;

@@ -24,7 +24,7 @@ macro_rules! mat {
             crate::base_matrix::DynamicMatrixFortranLayout<$ScalarType>,
             crate::matrix_traits::FortranLayout,
             crate::matrix_traits::MatrixD,
-        >::from_dimensions_f($dim.0, $dim.1)
+        >::from_dimensions($dim.0, $dim.1)
     };
 }
 

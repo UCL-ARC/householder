@@ -32,6 +32,16 @@ impl<Item: Scalar> DynamicMatrixFortranLayout<Item> {
             dim: (rows, cols),
         }
     }
+
+    // Return pointer to data
+    pub fn as_ptr(&self) -> *const Item {
+        self.data.as_ptr()
+    }
+
+    // Return mutable pointer to data
+    pub fn as_mut_ptr(&mut self) -> *mut Item {
+        self.data.as_mut_ptr()
+    }
 }
 
 impl<Item: Scalar> Dimensions for DynamicMatrixCLayout<Item> {
@@ -48,22 +58,18 @@ impl<Item: Scalar> Dimensions for DynamicMatrixFortranLayout<Item> {
 
 impl<Item: Scalar> LayoutType for DynamicMatrixCLayout<Item> {
     type L = CLayout;
-
 }
 
 impl<Item: Scalar> LayoutType for DynamicMatrixFortranLayout<Item> {
     type L = FortranLayout;
-
 }
 
 impl<Item: Scalar> SizeType for DynamicMatrixCLayout<Item> {
     type S = MatrixD;
-
 }
 
 impl<Item: Scalar> SizeType for DynamicMatrixFortranLayout<Item> {
     type S = MatrixD;
-
 }
 
 impl<Item: Scalar> SafeRandomAccess for DynamicMatrixCLayout<Item> {
@@ -77,7 +83,6 @@ impl<Item: Scalar> SafeRandomAccess for DynamicMatrixCLayout<Item> {
     fn get1d(&self, index: usize) -> Self::Output {
         *self.data.get(index).unwrap()
     }
-
 }
 
 impl<Item: Scalar> UnsafeRandomAccess for DynamicMatrixCLayout<Item> {
@@ -130,7 +135,6 @@ impl<Item: Scalar> UnsafeRandomAccess for DynamicMatrixFortranLayout<Item> {
     unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
         *self.data.get_unchecked(index)
     }
-
 }
 
 impl<Item: Scalar> SafeRandomAccess for DynamicMatrixFortranLayout<Item> {
@@ -144,7 +148,6 @@ impl<Item: Scalar> SafeRandomAccess for DynamicMatrixFortranLayout<Item> {
     fn get1d(&self, index: usize) -> Self::Output {
         *self.data.get(index).unwrap()
     }
-
 }
 
 impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> {
@@ -158,7 +161,6 @@ impl<Item: Scalar> UnsafeMutableRandomAccess for DynamicMatrixFortranLayout<Item
     unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output {
         self.data.get_unchecked_mut(index)
     }
-
 }
 
 impl<Item: Scalar> SafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> {
@@ -171,5 +173,37 @@ impl<Item: Scalar> SafeMutableRandomAccess for DynamicMatrixFortranLayout<Item> 
     #[inline]
     fn get1d_mut(&mut self, index: usize) -> &mut Self::Output {
         self.data.get_mut(index).unwrap()
+    }
+}
+
+impl<Item: Scalar> Pointer for DynamicMatrixCLayout<Item> {
+    type Item = Item;
+
+    fn as_ptr(&self) -> *const Item {
+        self.data.as_ptr()
+    }
+}
+
+impl<Item: Scalar> Pointer for DynamicMatrixFortranLayout<Item> {
+    type Item = Item;
+
+    fn as_ptr(&self) -> *const Item {
+        self.data.as_ptr()
+    }
+}
+
+impl<Item: Scalar> PointerMut for DynamicMatrixCLayout<Item> {
+    type Item = Item;
+
+    fn as_mut_ptr(&mut self) -> *mut Item {
+        self.data.as_mut_ptr()
+    }
+}
+
+impl<Item: Scalar> PointerMut for DynamicMatrixFortranLayout<Item> {
+    type Item = Item;
+
+    fn as_mut_ptr(&mut self) -> *mut Item {
+        self.data.as_mut_ptr()
     }
 }

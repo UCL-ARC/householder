@@ -2,7 +2,7 @@
 
 use crate::matrix::*;
 use crate::matrix_traits::*;
-use cauchy::{c32, c64, Scalar};
+use cauchy::Scalar;
 use std::marker::PhantomData;
 
 pub struct Addition<'a, Item, Mat1, Mat2, Layout, Size>(
