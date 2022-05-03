@@ -1,6 +1,5 @@
 //! The base matrix data types
 use crate::matrix_traits::*;
-use crate::iterators::*;
 use cauchy::Scalar;
 
 /// Base matrix with C Layout

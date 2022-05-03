@@ -7,3 +7,4 @@ pub mod base_matrix;
 pub mod macros;
 pub mod iterators;
 pub mod scalar_mult;
+pub mod addition;

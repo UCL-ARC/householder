@@ -4,9 +4,16 @@
 use crate::base_matrix::*;
 use crate::iterators::*;
 use crate::matrix_traits::*;
-use crate::scalar_mult::ScalarMult;
 use cauchy::Scalar;
 use std::marker::PhantomData;
+
+pub type MatrixFromRef<'a, Item, MatImpl, Layout, Size> = Matrix<
+    'a,
+    Item,
+    MatrixRef<'a, Item, Matrix<'a, Item, MatImpl, Layout, Size>, Layout, Size>,
+    Layout,
+    Size,
+>;
 
 /// A matrix is a simple enum struct.
 /// This can be a base matrix or something
@@ -32,8 +39,8 @@ where
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
 {
-    pub fn new(op: MatImpl) -> Self {
-        Self(op, PhantomData, PhantomData, PhantomData, PhantomData)
+    pub fn new(mat: MatImpl) -> Self {
+        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 
     /// Return a new iterator that iterates through the matrix in memory order
@@ -41,6 +48,17 @@ where
         &self,
     ) -> MatrixIterator<'a, Item, Matrix<Item, MatImpl, Layout, Size>, Layout, Size> {
         MatrixIterator::new(self)
+    }
+
+    /// Convert a reference to a matrix into an owned matrix.
+    ///
+    /// The owned matrix itself holds a reference to the original matrix and does
+    /// not allocate new memory. This allows handing over matrices to functions
+    /// that expect a matrix and not a reference to a matrix.
+    pub fn from_ref(
+        mat: &'a Matrix<'a, Item, MatImpl, Layout, Size>,
+    ) -> MatrixFromRef<'a, Item, MatImpl, Layout, Size> {
+        Matrix::new(MatrixRef::new(mat))
     }
 }
 
@@ -238,8 +256,8 @@ where
 }
 
 /// A MatrixRef is like a matrix but holds a reference to an implementation.
-pub struct MatrixRef<'a, Item, MatImpl, Layout, Size>(
-    &'a MatImpl,
+pub struct MatrixRef<'a, Item, Mat, Layout, Size>(
+    &'a Mat,
     PhantomData<Item>,
     PhantomData<Layout>,
     PhantomData<Size>,
@@ -249,24 +267,24 @@ where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>;
+    Mat: MatrixTrait<'a, Item, Layout, Size>;
 
-impl<'a, Item, MatImpl, Layout, Size> MatrixRef<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> MatrixRef<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
 {
-    pub fn new(op: &'a MatImpl) -> Matrix<'a, Item, Self, Layout, Size> {
-        Matrix::new(Self(op, PhantomData, PhantomData, PhantomData, PhantomData))
+    pub fn new(mat: &'a Mat) -> Self {
+        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size> Dimensions for MatrixRef<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> Dimensions for MatrixRef<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
 {
@@ -275,11 +293,10 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size> SafeRandomAccess
-    for MatrixRef<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> SafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
 {
@@ -295,11 +312,10 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess
-    for MatrixRef<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> UnsafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
 {
@@ -315,74 +331,24 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size> SizeType for MatrixRef<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> SizeType for MatrixRef<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
 {
     type S = Size;
 }
 
-impl<'a, Item, MatImpl, Layout, Size> LayoutType for MatrixRef<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> LayoutType for MatrixRef<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
 {
     type L = Layout;
-}
-
-impl<'a, MatImpl, Layout, Size> std::ops::Mul<Matrix<'a, f64, MatImpl, Layout, Size>> for f64
-where
-    MatImpl: MatrixTrait<'a, f64, Layout, Size>,
-    Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-{
-    type Output = Matrix<
-        'a,
-        f64,
-        ScalarMult<'a, f64, Matrix<'a, f64, MatImpl, Layout, Size>, Layout, Size>,
-        Layout,
-        Size,
-    >;
-
-    fn mul(self, rhs: Matrix<'a, f64, MatImpl, Layout, Size>) -> Self::Output {
-        Matrix::new(ScalarMult::new(rhs, self))
-    }
-}
-
-impl<'a, MatImpl, Layout, Size> std::ops::Mul<&'a Matrix<'a, f64, MatImpl, Layout, Size>> for f64
-where
-    MatImpl: MatrixTrait<'a, f64, Layout, Size>,
-    Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-{
-    type Output = Matrix<
-        'a,
-        f64,
-        ScalarMult<
-            'a,
-            f64,
-            Matrix<
-                'a,
-                f64,
-                MatrixRef<'a, f64, Matrix<'a, f64, MatImpl, Layout, Size>, Layout, Size>,
-                Layout,
-                Size,
-            >,
-            Layout,
-            Size,
-        >,
-        Layout,
-        Size,
-    >;
-
-    fn mul(self, rhs: &'a Matrix<'a, f64, MatImpl, Layout, Size>) -> Self::Output {
-        Matrix::new(ScalarMult::new(MatrixRef::new(rhs), self))
-    }
 }
 
 #[cfg(test)]
@@ -393,12 +359,15 @@ mod test {
 
     #[test]
     fn scalar_mult() {
-        let mut mat = mat![f64, (2, 3), CLayout];
+        let mut mat1 = mat![f64, (2, 3), CLayout];
+        let mut mat2 = mat![f64, (2, 3), CLayout];
 
-        *mat.get_mut(1, 2) = 2.0;
 
-        let res = 5.0 * &mat;
+        *mat1.get_mut(1, 2) = 2.0;
+        *mat2.get_mut(1, 2) = 3.0;
 
-        assert_eq!(res.get(1, 2), 10.0);
+        let res = 5.0 * &mat1 + mat2;
+
+        assert_eq!(res.get(1, 2), 13.0);
     }
 }
