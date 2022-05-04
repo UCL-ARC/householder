@@ -73,7 +73,7 @@ where
     pub fn eval(&self) -> Matrix<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
         let (rows, cols) = self.dim();
         let nelems = rows * cols;
-        let mut res = Matrix::<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>::from_dimensions(
+        let mut res = Matrix::<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>::from_dimension(
             rows, cols,
         );
 
@@ -94,7 +94,7 @@ where
     pub fn eval(&self) -> Matrix<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
         let (rows, cols) = self.dim();
         let nelems = rows * cols;
-        let mut res = Matrix::<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>::from_dimensions(
+        let mut res = Matrix::<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>::from_dimension(
             rows, cols);
 
         unsafe {
@@ -108,14 +108,14 @@ where
 
 impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
     /// Create a new matrix with dimensions (rows, cols) using C Layout
-    pub fn from_dimensions(rows: usize, cols: usize) -> Self {
+    pub fn from_dimension(rows: usize, cols: usize) -> Self {
         Self::new(DynamicMatrixCLayout::<Item>::new(rows, cols))
     }
 }
 
 impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
     /// Create a new matrix with dimensions (rows, cols) using Fortran Layout
-    pub fn from_dimensions(rows: usize, cols: usize) -> Self {
+    pub fn from_dimension(rows: usize, cols: usize) -> Self {
         Self::new(DynamicMatrixFortranLayout::<Item>::new(rows, cols))
     }
 }

@@ -13,7 +13,7 @@ macro_rules! mat {
             crate::base_matrix::DynamicMatrixCLayout<$ScalarType>,
             crate::matrix_traits::CLayout,
             crate::matrix_traits::MatrixD,
-        >::from_dimensions($dim.0, $dim.1)
+        >::from_dimension($dim.0, $dim.1)
     };
 
     ($ScalarType:ty, $dim:expr, FortranLayout) => {
@@ -24,7 +24,7 @@ macro_rules! mat {
             crate::base_matrix::DynamicMatrixFortranLayout<$ScalarType>,
             crate::matrix_traits::FortranLayout,
             crate::matrix_traits::MatrixD,
-        >::from_dimensions($dim.0, $dim.1)
+        >::from_dimension($dim.0, $dim.1)
     };
 }
 

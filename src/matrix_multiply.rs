@@ -34,7 +34,7 @@ macro_rules! dot_impl_real {
                 let rsc = n as isize;
                 let csc: isize = 1;
 
-                let mut res = CMatrixD::<$Scalar>::from_dimensions(m, n);
+                let mut res = CMatrixD::<$Scalar>::from_dimension(m, n);
 
                 unsafe {
                     $Blas(
@@ -87,7 +87,7 @@ macro_rules! dot_impl_real {
                 let rsc: isize = 1;
                 let csc: isize = m as isize;
 
-                let mut res = FMatrixD::<$Scalar>::from_dimensions(m, n);
+                let mut res = FMatrixD::<$Scalar>::from_dimension(m, n);
 
                 unsafe {
                     $Blas(
@@ -145,7 +145,7 @@ macro_rules! dot_impl_complex {
                 let rsc = n as isize;
                 let csc: isize = 1;
 
-                let mut res = CMatrixD::<$Scalar>::from_dimensions(m, n);
+                let mut res = CMatrixD::<$Scalar>::from_dimension(m, n);
 
                 let one: [$Real; 2] = [1.0, 0.0];
                 let zero: [$Real; 2] = [0.0, 0.0];
@@ -203,7 +203,7 @@ macro_rules! dot_impl_complex {
                 let rsc: isize = 1;
                 let csc: isize = m as isize;
 
-                let mut res = FMatrixD::<$Scalar>::from_dimensions(m, n);
+                let mut res = FMatrixD::<$Scalar>::from_dimension(m, n);
 
                 let one: [$Real; 2] = [1.0, 0.0];
                 let zero: [$Real; 2] = [0.0, 0.0];
