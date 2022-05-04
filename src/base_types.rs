@@ -1,7 +1,10 @@
 //! The base matrix data types
-use crate::matrix_traits::*;
+use crate::traits::*;
 use std::marker::PhantomData;
 use cauchy::Scalar;
+
+pub type DynamicBaseVector<Item> = DynamicMatrix<Item, VLayout>;
+
 
 pub struct DynamicMatrix<Item: Scalar, L: LayoutIdentifier> {
     data: Vec<Item>,
@@ -26,10 +29,7 @@ impl<Item: Scalar, L: LayoutIdentifier> Dimensions for DynamicMatrix<Item, L> {
     }
 }
 
-
-impl<Item: Scalar, L: LayoutIdentifier> LayoutType for DynamicMatrix<Item, L> {
-    type L = L;
-}
+impl<Item: Scalar, L: LayoutIdentifier> LayoutType<L> for DynamicMatrix<Item, L> {}
 
 
 impl<Item: Scalar, L: LayoutIdentifier> SizeType for DynamicMatrix<Item, L> {
@@ -107,6 +107,13 @@ impl<Item: Scalar, L: LayoutIdentifier> PointerMut for DynamicMatrix<Item, L> {
         self.data.as_mut_ptr()
     }
 }
+
+impl<Item: Scalar> VectorLength for DynamicBaseVector<Item> {
+    fn len(&self) -> usize {
+        self.data.len()
+    }
+}
+
 
 #[cfg(test)]
 mod test {

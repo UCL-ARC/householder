@@ -1,7 +1,7 @@
 //! Addition of two matrices
 
 use crate::matrix::*;
-use crate::matrix_traits::*;
+use crate::traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
@@ -113,16 +113,14 @@ where
     type S = Size;
 }
 
-impl<'a, Item, Mat1, Mat2, Layout, Size> LayoutType for Addition<'a, Item, Mat1, Mat2, Layout, Size>
+impl<'a, Item, Mat1, Mat2, Layout, Size> LayoutType<Layout> for Addition<'a, Item, Mat1, Mat2, Layout, Size>
 where
     Item: Scalar,
     Mat1: MatrixTrait<'a, Item, Layout, Size>,
     Mat2: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-{
-    type L = Layout;
-}
+{}
 
 //mat1 + mat2
 impl<'a, Item, MatImpl1, MatImpl2, Layout, Size>

@@ -1,6 +1,6 @@
 //! Multiplication of a matrix with a scalar
 use crate::matrix::*;
-use crate::matrix_traits::*;
+use crate::traits::*;
 use cauchy::{Scalar, c32, c64};
 use std::marker::PhantomData;
 
@@ -99,15 +99,13 @@ where
     type S = Size;
 }
 
-impl<'a, Item, Mat, Layout, Size> LayoutType for ScalarMult<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> LayoutType<Layout> for ScalarMult<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
     Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-{
-    type L = Layout;
-}
+{}
 
 macro_rules! scalar_mult_impl {
     ($Scalar:ty) => {

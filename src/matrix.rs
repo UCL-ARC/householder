@@ -1,9 +1,9 @@
 //! Definition of base classes associated with matrices.
 //!
 
-use crate::base_matrix::*;
+use crate::base_types::*;
 use crate::iterators::*;
-use crate::matrix_traits::*;
+use crate::traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
@@ -17,6 +17,8 @@ pub type MatrixFromRef<'a, Item, MatImpl, Layout, Size> = Matrix<
 
 pub type CMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, CLayout>, CLayout, MatrixD>;
 pub type FMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, FLayout>, FLayout, MatrixD>;
+pub type VectorD<'a, Item> = Matrix<'a, Item, DynamicBaseVector<Item>, VLayout, MatrixD>;
+
 
 /// A matrix is a simple enum struct.
 /// This can be a base matrix or something
@@ -211,15 +213,13 @@ where
     type S = Size;
 }
 
-impl<'a, Item, MatImpl, Layout, Size> LayoutType for Matrix<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, MatImpl, Layout, Size> LayoutType<Layout> for Matrix<'a, Item, MatImpl, Layout, Size>
 where
     Item: Scalar,
     MatImpl: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-{
-    type L = Layout;
-}
+{}
 
 /// A MatrixRef is like a matrix but holds a reference to an implementation.
 pub struct MatrixRef<'a, Item, Mat, Layout, Size>(
@@ -307,15 +307,21 @@ where
     type S = Size;
 }
 
-impl<'a, Item, Mat, Layout, Size> LayoutType for MatrixRef<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, Size> LayoutType<Layout> for MatrixRef<'a, Item, Mat, Layout, Size>
 where
     Item: Scalar,
     Mat: MatrixTrait<'a, Item, Layout, Size>,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-{
-    type L = Layout;
-}
+{}
+
+impl<'a, Item: Scalar> VectorLength for  VectorD<'a, Item> {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+} 
+
+
 
 #[cfg(test)]
 mod test {
@@ -335,4 +341,5 @@ mod test {
 
         assert_eq!(res.get(1, 2), 13.0);
     }
+
 }

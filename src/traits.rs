@@ -5,15 +5,13 @@ use cauchy::Scalar;
 pub enum MemoryLayout {
     C,
     F,
+    V,
 }
 
 pub enum MatrixSizeType {
     MATRIX2,
     MATRIX3,
     MATRIXD,
-    VECTOR2,
-    VECTOR3,
-    VECTORD,
 }
 
 /// Bounds checked random access for matrices.
@@ -94,24 +92,29 @@ pub struct Matrix3;
 /// Dynamic sized matrix
 pub struct MatrixD;
 
-// Length 2 vector
-pub struct Vector2;
+// Length 2 row vector
+pub struct RowVector2;
 
-// Length 3 vector
-pub struct Vector3;
+// Length 3 row vector
+pub struct RowVector3;
 
-// Dynamix length vector
-pub struct VectorD;
+// Dynamix length row vector
+pub struct RowVectorD;
+
+// Length 2 col vector
+pub struct ColVector2;
+
+// Length 3 col vector
+pub struct ColVector3;
+
+// Dynamix length col vector
+pub struct ColVectorD;
 
 pub trait SizeIdentifier {}
 
 impl SizeIdentifier for Matrix2 {}
 impl SizeIdentifier for Matrix3 {}
 impl SizeIdentifier for MatrixD {}
-
-impl SizeIdentifier for Vector2 {}
-impl SizeIdentifier for Vector3 {}
-impl SizeIdentifier for VectorD {}
 
 pub trait SizeType {
     type S: SizeIdentifier;
@@ -140,24 +143,6 @@ impl<T: SizeType<S = MatrixD>> Size<MatrixD> for T {
     }
 }
 
-impl<T: SizeType<S = Vector2>> Size<Vector2> for T {
-    fn size_type(&self) -> MatrixSizeType {
-        MatrixSizeType::VECTOR2
-    }
-}
-
-impl<T: SizeType<S = Vector3>> Size<Vector3> for T {
-    fn size_type(&self) -> MatrixSizeType {
-        MatrixSizeType::VECTOR3
-    }
-}
-
-impl<T: SizeType<S = VectorD>> Size<VectorD> for T {
-    fn size_type(&self) -> MatrixSizeType {
-        MatrixSizeType::VECTORD
-    }
-}
-
 // The following specifies traits to mark matrices as having either a C or Fortran
 // Layout. We do this on the type level and not via runtime information so the
 // compiler can distinguish between these two.
@@ -165,6 +150,9 @@ impl<T: SizeType<S = VectorD>> Size<VectorD> for T {
 // These are empty types specifying whether we have C or Fortran Layout
 pub struct CLayout;
 pub struct FLayout;
+
+// Separate Layout for vectors
+pub struct VLayout;
 
 // Marker trait to specify layout identifiers
 pub trait LayoutIdentifier {
@@ -184,29 +172,38 @@ impl LayoutIdentifier for FLayout {
         col * dim.0 + row
     }
 }
+impl LayoutIdentifier for VLayout {
+
+    // Choosing C Layout here. Fortran and C Layout are identical for vectors
+    // and both are possible.
+    #[inline]
+    fn transform_index(row: usize, col: usize, dim: (usize, usize)) -> usize {
+        row * dim.1 + col
+    }
+}
 
 /// A generic trait to obtain memory layout information
 
-pub trait LayoutType {
-    type L: LayoutIdentifier;
-}
+pub trait LayoutType<L> {}
 
-pub trait Layout<L: LayoutIdentifier>: LayoutType<L = L> {
+pub trait Layout<L: LayoutIdentifier>: LayoutType<L> {
     fn layout_type(&self) -> MemoryLayout;
 }
 
-impl<T: LayoutType<L = CLayout>> Layout<CLayout> for T {
+impl<T: LayoutType<CLayout>> Layout<CLayout> for T {
     fn layout_type(&self) -> MemoryLayout {
         MemoryLayout::C
     }
 }
 
-impl<T: LayoutType<L = FLayout>> Layout<FLayout> for T {
+impl<T: LayoutType<FLayout>> Layout<FLayout> for T {
     fn layout_type(&self) -> MemoryLayout {
         MemoryLayout::F
     }
 }
 
+impl<T: LayoutType<VLayout>> LayoutType<CLayout> for T {}
+impl<T: LayoutType<VLayout>> LayoutType<FLayout> for T {}
 
 /// Any matrix type that has an associated dimension.
 pub trait Dimensions {
@@ -226,13 +223,13 @@ pub trait IterableMut<'a, Item: Scalar, Iter: Iterator<Item = &'a mut Item>> {
 
 /// Combined trait that summarizes basic matrix properties
 pub trait MatrixTrait<'a, Item: Scalar, Layout: LayoutIdentifier, Size: SizeIdentifier>:
-    RandomAccess<Item> + Dimensions + LayoutType<L = Layout> + SizeType<S = Size>
+    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>
 {
 }
 
 /// Combined trait for mutable matrices
 pub trait MatrixMutTrait<'a, Item: Scalar, Layout: LayoutIdentifier, Size: SizeIdentifier>:
-    RandomAccess<Item> + Dimensions + LayoutType<L = Layout> + SizeType<S = Size>
+    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>
 {
 }
 
@@ -256,7 +253,7 @@ where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Mat: RandomAccess<Item> + Dimensions + LayoutType<L = Layout> + SizeType<S = Size>,
+    Mat: RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>,
 {
 }
 
@@ -266,6 +263,11 @@ where
     Item: Scalar,
     Layout: LayoutIdentifier,
     Size: SizeIdentifier,
-    Mat: RandomAccessMut<Item> + Dimensions + LayoutType<L = Layout> + SizeType<S = Size>,
+    Mat: RandomAccessMut<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>,
 {
+}
+
+/// Length of a vector
+pub trait VectorLength {
+    fn len(&self) -> usize;
 }

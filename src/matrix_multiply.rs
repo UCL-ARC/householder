@@ -1,7 +1,7 @@
 //! Implementation of matrix multiplication
 
 use crate::matrix::*;
-use crate::matrix_traits::*;
+use crate::traits::*;
 use cauchy::{c32, c64};
 use matrixmultiply::{cgemm, dgemm, sgemm, zgemm, CGemmOption};
 use num;
@@ -10,7 +10,7 @@ macro_rules! dot_impl_real {
     ($Scalar:ty, $Blas:ident) => {
         impl<'a> CMatrixD<'a, $Scalar> {
             /// Return the product of this matrix with another matrix.
-            pub fn dot<Other: Dimensions + LayoutType<L = CLayout> + Pointer<Item = $Scalar>>(
+            pub fn dot<Other: Dimensions + LayoutType<CLayout> + Pointer<Item = $Scalar>>(
                 &self,
                 other: Other,
             ) -> CMatrixD<'a, $Scalar> {
@@ -62,7 +62,7 @@ macro_rules! dot_impl_real {
         impl<'a> FMatrixD<'a, $Scalar> {
             /// Return the product of this matrix with another matrix.
             pub fn dot<
-                Other: Dimensions + LayoutType<L = FLayout> + Pointer<Item = $Scalar>,
+                Other: Dimensions + LayoutType<FLayout> + Pointer<Item = $Scalar>,
             >(
                 &self,
                 other: Other,
@@ -121,7 +121,7 @@ macro_rules! dot_impl_complex {
     ($Scalar:ty, $Real:ty, $Blas:ident) => {
         impl<'a> CMatrixD<'a, $Scalar> {
             /// Return the product of this matrix with another matrix.
-            pub fn dot<Other: Dimensions + LayoutType<L = CLayout> + Pointer<Item = $Scalar>>(
+            pub fn dot<Other: Dimensions + LayoutType<CLayout> + Pointer<Item = $Scalar>>(
                 &self,
                 other: Other,
             ) -> CMatrixD<'a, $Scalar> {
@@ -178,7 +178,7 @@ macro_rules! dot_impl_complex {
         impl<'a> FMatrixD<'a, $Scalar> {
             /// Return the product of this matrix with another matrix.
             pub fn dot<
-                Other: Dimensions + LayoutType<L = FLayout> + Pointer<Item = $Scalar>,
+                Other: Dimensions + LayoutType<FLayout> + Pointer<Item = $Scalar>,
             >(
                 &self,
                 other: Other,

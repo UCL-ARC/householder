@@ -4,7 +4,7 @@
 //! Users can provide custom iterators as well, which are packed within an
 //! Iterator struct.
 
-use crate::matrix_traits::*;
+use crate::traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
