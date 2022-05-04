@@ -17,6 +17,8 @@ macro_rules! mat {
     };
 }
 
+#[macro_export]
+#[allow(unused_macros)]
 macro_rules! col_vec {
 
     ($ScalarType:ty, $len:expr) =>
@@ -32,6 +34,8 @@ macro_rules! col_vec {
     };
 }
 
+#[macro_export]
+#[allow(unused_macros)]
 macro_rules! row_vec {
 
     ($ScalarType:ty, $len:expr) =>
@@ -77,6 +81,14 @@ mod test {
     fn create_column_vector() {
         let len = 5;
         let vec = col_vec![f64, len];
+
+        assert_eq!(vec.len(), 5);
+    }
+
+    #[test]
+    fn create_row_vector() {
+        let len = 5;
+        let vec = row_vec![f64, len];
 
         assert_eq!(vec.len(), 5);
     }
