@@ -4,25 +4,14 @@
 #[macro_export]
 macro_rules! mat {
 
-        ($ScalarType:ty, $dim:expr, CLayout) =>
+        ($ScalarType:ty, $dim:expr, $Layout:ty) =>
 
     {
         crate::matrix::Matrix::<
             '_,
             $ScalarType,
-            crate::base_matrix::DynamicMatrixCLayout<$ScalarType>,
-            crate::matrix_traits::CLayout,
-            crate::matrix_traits::MatrixD,
-        >::from_dimension($dim.0, $dim.1)
-    };
-
-    ($ScalarType:ty, $dim:expr, FortranLayout) => {
-
-        crate::matrix::Matrix::<
-            '_,
-            $ScalarType,
-            crate::base_matrix::DynamicMatrixFortranLayout<$ScalarType>,
-            crate::matrix_traits::FortranLayout,
+            crate::base_matrix::DynamicMatrix<$ScalarType, $Layout>,
+            $Layout,
             crate::matrix_traits::MatrixD,
         >::from_dimension($dim.0, $dim.1)
     };
@@ -36,7 +25,7 @@ mod test {
     #[test]
     fn create_c_layout_matrix() {
         let dim = (2, 3);
-        let mat = mat![f64, dim, FortranLayout];
+        let mat = mat![f64, dim, FLayout];
 
         assert_eq!(mat.dim(), (2, 3));
     }

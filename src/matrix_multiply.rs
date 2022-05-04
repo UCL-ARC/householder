@@ -62,7 +62,7 @@ macro_rules! dot_impl_real {
         impl<'a> FMatrixD<'a, $Scalar> {
             /// Return the product of this matrix with another matrix.
             pub fn dot<
-                Other: Dimensions + LayoutType<L = FortranLayout> + Pointer<Item = $Scalar>,
+                Other: Dimensions + LayoutType<L = FLayout> + Pointer<Item = $Scalar>,
             >(
                 &self,
                 other: Other,
@@ -178,7 +178,7 @@ macro_rules! dot_impl_complex {
         impl<'a> FMatrixD<'a, $Scalar> {
             /// Return the product of this matrix with another matrix.
             pub fn dot<
-                Other: Dimensions + LayoutType<L = FortranLayout> + Pointer<Item = $Scalar>,
+                Other: Dimensions + LayoutType<L = FLayout> + Pointer<Item = $Scalar>,
             >(
                 &self,
                 other: Other,
@@ -293,8 +293,8 @@ mod test {
         let dim1 = (2, 3);
         let dim2 = (3, 4);
 
-        let mut mat1 = mat![f64, dim1, FortranLayout];
-        let mut mat2 = mat![f64, dim2, FortranLayout];
+        let mut mat1 = mat![f64, dim1, FLayout];
+        let mut mat2 = mat![f64, dim2, FLayout];
 
         let mut count = 0;
         for row in 0..dim1.0 {
@@ -379,8 +379,8 @@ mod test {
         let dim1 = (2, 3);
         let dim2 = (3, 4);
 
-        let mut mat1 = mat![f32, dim1, FortranLayout];
-        let mut mat2 = mat![f32, dim2, FortranLayout];
+        let mut mat1 = mat![f32, dim1, FLayout];
+        let mut mat2 = mat![f32, dim2, FLayout];
 
         let mut count = 0;
         for row in 0..dim1.0 {
@@ -469,8 +469,8 @@ mod test {
         let dim1 = (2, 3);
         let dim2 = (3, 4);
 
-        let mut mat1 = mat![c64, dim1, FortranLayout];
-        let mut mat2 = mat![c64, dim2, FortranLayout];
+        let mut mat1 = mat![c64, dim1, FLayout];
+        let mut mat2 = mat![c64, dim2, FLayout];
 
         let mut count = 0;
         for row in 0..dim1.0 {
@@ -487,7 +487,7 @@ mod test {
             }
         }
 
-        let mut expected = mat![c64, (dim1.0, dim2.1), FortranLayout];
+        let mut expected = mat![c64, (dim1.0, dim2.1), FLayout];
 
         *expected.get_mut(0, 0) = c64::new(-38.0, 114.0);
         *expected.get_mut(0, 1) = c64::new(-41.0, 123.0);
@@ -557,8 +557,8 @@ mod test {
         let dim1 = (2, 3);
         let dim2 = (3, 4);
 
-        let mut mat1 = mat![c32, dim1, FortranLayout];
-        let mut mat2 = mat![c32, dim2, FortranLayout];
+        let mut mat1 = mat![c32, dim1, FLayout];
+        let mut mat2 = mat![c32, dim2, FLayout];
 
         let mut count = 0;
         for row in 0..dim1.0 {
@@ -575,7 +575,7 @@ mod test {
             }
         }
 
-        let mut expected = mat![c32, (dim1.0, dim2.1), FortranLayout];
+        let mut expected = mat![c32, (dim1.0, dim2.1), FLayout];
 
         *expected.get_mut(0, 1) = c32::new(-41.0, 123.0);
         *expected.get_mut(0, 0) = c32::new(-38.0, 114.0);

@@ -15,8 +15,8 @@ pub type MatrixFromRef<'a, Item, MatImpl, Layout, Size> = Matrix<
     Size,
 >;
 
-pub type CMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>;
-pub type FMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>;
+pub type CMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, CLayout>, CLayout, MatrixD>;
+pub type FMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, FLayout>, FLayout, MatrixD>;
 
 /// A matrix is a simple enum struct.
 /// This can be a base matrix or something
@@ -65,15 +65,15 @@ where
     }
 }
 
-impl<'a, Item, MatImpl> Matrix<'a, Item, MatImpl, CLayout, MatrixD>
+impl<'a, Item, MatImpl, Layout: LayoutIdentifier> Matrix<'a, Item, MatImpl, Layout, MatrixD>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, CLayout, MatrixD>,
+    MatImpl: MatrixTrait<'a, Item, Layout, MatrixD>,
 {
-    pub fn eval(&self) -> Matrix<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
+    pub fn eval(&self) -> Matrix<Item, DynamicMatrix<Item, Layout>, Layout, MatrixD> {
         let (rows, cols) = self.dim();
         let nelems = rows * cols;
-        let mut res = Matrix::<Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>::from_dimension(
+        let mut res = Matrix::<Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>::from_dimension(
             rows, cols,
         );
 
@@ -86,41 +86,15 @@ where
     }
 }
 
-impl<'a, Item, MatImpl> Matrix<'a, Item, MatImpl, FortranLayout, MatrixD>
-where
-    Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, FortranLayout, MatrixD>,
-{
-    pub fn eval(&self) -> Matrix<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
-        let (rows, cols) = self.dim();
-        let nelems = rows * cols;
-        let mut res = Matrix::<Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>::from_dimension(
-            rows, cols);
 
-        unsafe {
-            for index in 0..nelems {
-                *res.get1d_unchecked_mut(index) = self.get1d_unchecked(index);
-            }
-        }
-        res
-    }
-}
-
-impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
+impl<'a, Item: Scalar, Layout: LayoutIdentifier> Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD> {
     /// Create a new matrix with dimensions (rows, cols) using C Layout
     pub fn from_dimension(rows: usize, cols: usize) -> Self {
-        Self::new(DynamicMatrixCLayout::<Item>::new(rows, cols))
+        Self::new(DynamicMatrix::<Item, Layout>::new(rows, cols))
     }
 }
 
-impl<'a, Item: Scalar> Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD> {
-    /// Create a new matrix with dimensions (rows, cols) using Fortran Layout
-    pub fn from_dimension(rows: usize, cols: usize) -> Self {
-        Self::new(DynamicMatrixFortranLayout::<Item>::new(rows, cols))
-    }
-}
-
-impl<'a, Item: Scalar> Pointer for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
+impl<'a, Item: Scalar, Layout: LayoutIdentifier> Pointer for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD> {
     type Item = Item;
 
     fn as_ptr(&self) -> *const Self::Item {
@@ -128,26 +102,10 @@ impl<'a, Item: Scalar> Pointer for Matrix<'a, Item, DynamicMatrixCLayout<Item>, 
     }
 }
 
-impl<'a, Item: Scalar> Pointer
-    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
-{
-    type Item = Item;
 
-    fn as_ptr(&self) -> *const Self::Item {
-        self.0.as_ptr()
-    }
-}
 
-impl<'a, Item: Scalar> PointerMut for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD> {
-    type Item = Item;
-
-    fn as_mut_ptr(&mut self) -> *mut Self::Item {
-        self.0.as_mut_ptr()
-    }
-}
-
-impl<'a, Item: Scalar> PointerMut
-    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
+impl<'a, Item: Scalar, Layout: LayoutIdentifier> PointerMut
+    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>
 {
     type Item = Item;
 
@@ -189,8 +147,8 @@ where
     }
 }
 
-impl<'a, Item> SafeMutableRandomAccess
-    for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>
+impl<'a, Item, Layout: LayoutIdentifier> SafeMutableRandomAccess
+    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>
 where
     Item: Scalar,
 {
@@ -206,25 +164,8 @@ where
     }
 }
 
-impl<'a, Item> SafeMutableRandomAccess
-    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
-where
-    Item: Scalar,
-{
-    type Output = Item;
-
-    #[inline]
-    fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
-        self.0.get_mut(row, col)
-    }
-    #[inline]
-    fn get1d_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.0.get1d_mut(index)
-    }
-}
-
-impl<'a, Item> UnsafeMutableRandomAccess
-    for Matrix<'a, Item, DynamicMatrixCLayout<Item>, CLayout, MatrixD>
+impl<'a, Item, Layout: LayoutIdentifier> UnsafeMutableRandomAccess
+    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>
 where
     Item: Scalar,
 {
@@ -240,22 +181,6 @@ where
     }
 }
 
-impl<'a, Item> UnsafeMutableRandomAccess
-    for Matrix<'a, Item, DynamicMatrixFortranLayout<Item>, FortranLayout, MatrixD>
-where
-    Item: Scalar,
-{
-    type Output = Item;
-
-    #[inline]
-    unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
-        self.0.get_unchecked_mut(row, col)
-    }
-    #[inline]
-    unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.0.get1d_unchecked_mut(index)
-    }
-}
 
 impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess for Matrix<'a, Item, MatImpl, Layout, Size>
 where
@@ -400,8 +325,8 @@ mod test {
 
     #[test]
     fn scalar_mult() {
-        let mut mat1 = mat![f64, (2, 3), CLayout];
-        let mut mat2 = mat![f64, (2, 3), CLayout];
+        let mut mat1 = mat![f64, (2, 3), FLayout];
+        let mut mat2 = mat![f64, (2, 3), FLayout];
 
         *mat1.get_mut(1, 2) = 2.0;
         *mat2.get_mut(1, 2) = 3.0;
