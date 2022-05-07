@@ -5,29 +5,32 @@ use crate::traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
-pub struct Addition<'a, Item, Mat1, Mat2, Layout, Size>(
+pub struct Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>(
     Mat1,
     Mat2,
     PhantomData<Item>,
     PhantomData<Layout>,
-    PhantomData<Size>,
+    PhantomData<RS>,
+    PhantomData<CS>,
     PhantomData<&'a ()>,
 )
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Mat1: MatrixTrait<'a, Item, Layout, Size>,
-    Mat2: MatrixTrait<'a, Item, Layout, Size>;
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>;
 
-impl<'a, Item, Mat1, Mat2, Layout, Size> Addition<'a, Item, Mat1, Mat2, Layout, Size>
+impl<'a, Item, Mat1, Mat2, Layout, RS, CS> Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat1: MatrixTrait<'a, Item, Layout, Size>,
-    Mat2: MatrixTrait<'a, Item, Layout, Size>,
+    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-{
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    {
     pub fn new(mat1: Mat1, mat2: Mat2) -> Self {
         assert_eq!(
             mat1.dim(),
@@ -43,31 +46,34 @@ where
             PhantomData,
             PhantomData,
             PhantomData,
+            PhantomData,
         )
     }
 }
 
-impl<'a, Item, Mat1, Mat2, Layout, Size> Dimensions for Addition<'a, Item, Mat1, Mat2, Layout, Size>
+impl<'a, Item, Mat1, Mat2, Layout, RS, CS> Dimensions for Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat1: MatrixTrait<'a, Item, Layout, Size>,
-    Mat2: MatrixTrait<'a, Item, Layout, Size>,
+    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-{
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
     }
 }
 
-impl<'a, Item, Mat1, Mat2, Layout, Size> SafeRandomAccess
-    for Addition<'a, Item, Mat1, Mat2, Layout, Size>
+impl<'a, Item, Mat1, Mat2, Layout, RS, CS> SafeRandomAccess
+    for Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat1: MatrixTrait<'a, Item, Layout, Size>,
-    Mat2: MatrixTrait<'a, Item, Layout, Size>,
+    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -81,14 +87,15 @@ where
     }
 }
 
-impl<'a, Item, Mat1, Mat2, Layout, Size> UnsafeRandomAccess
-    for Addition<'a, Item, Mat1, Mat2, Layout, Size>
+impl<'a, Item, Mat1, Mat2, Layout, RS, CS> UnsafeRandomAccess
+    for Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat1: MatrixTrait<'a, Item, Layout, Size>,
-    Mat2: MatrixTrait<'a, Item, Layout, Size>,
+    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -102,36 +109,40 @@ where
     }
 }
 
-impl<'a, Item, Mat1, Mat2, Layout, Size> SizeType for Addition<'a, Item, Mat1, Mat2, Layout, Size>
+impl<'a, Item, Mat1, Mat2, Layout, RS, CS> SizeType for Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat1: MatrixTrait<'a, Item, Layout, Size>,
-    Mat2: MatrixTrait<'a, Item, Layout, Size>,
+    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
-    type S = Size;
+    type R = RS;
+    type C = CS;
 }
 
-impl<'a, Item, Mat1, Mat2, Layout, Size> LayoutType<Layout> for Addition<'a, Item, Mat1, Mat2, Layout, Size>
+impl<'a, Item, Mat1, Mat2, Layout, RS, CS> LayoutType<Layout> for Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat1: MatrixTrait<'a, Item, Layout, Size>,
-    Mat2: MatrixTrait<'a, Item, Layout, Size>,
+    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {}
 
 //mat1 + mat2
-impl<'a, Item, MatImpl1, MatImpl2, Layout, Size>
-    std::ops::Add<Matrix<'a, Item, MatImpl2, Layout, Size>>
-    for Matrix<'a, Item, MatImpl1, Layout, Size>
+impl<'a, Item, MatImpl1, MatImpl2, Layout, RS, CS>
+    std::ops::Add<Matrix<'a, Item, MatImpl2, Layout, RS, CS>>
+    for Matrix<'a, Item, MatImpl1, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl1: MatrixTrait<'a, Item, Layout, Size>,
-    MatImpl2: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    MatImpl2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Matrix<
         'a,
@@ -139,30 +150,33 @@ where
         Addition<
             'a,
             Item,
-            Matrix<'a, Item, MatImpl1, Layout, Size>,
-            Matrix<'a, Item, MatImpl2, Layout, Size>,
+            Matrix<'a, Item, MatImpl1, Layout, RS, CS>,
+            Matrix<'a, Item, MatImpl2, Layout, RS, CS>,
             Layout,
-            Size,
+            RS,
+            CS,
         >,
         Layout,
-        Size,
+        RS,
+        CS,
     >;
 
-    fn add(self, rhs: Matrix<'a, Item, MatImpl2, Layout, Size>) -> Self::Output {
+    fn add(self, rhs: Matrix<'a, Item, MatImpl2, Layout, RS, CS>) -> Self::Output {
         Matrix::new(Addition::new(self, rhs))
     }
 }
 
 //mat1 + &mat2
-impl<'a, Item, MatImpl1, MatImpl2, Layout, Size>
-    std::ops::Add<&'a Matrix<'a, Item, MatImpl2, Layout, Size>>
-    for Matrix<'a, Item, MatImpl1, Layout, Size>
+impl<'a, Item, MatImpl1, MatImpl2, Layout, RS, CS>
+    std::ops::Add<&'a Matrix<'a, Item, MatImpl2, Layout, RS, CS>>
+    for Matrix<'a, Item, MatImpl1, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl1: MatrixTrait<'a, Item, Layout, Size>,
-    MatImpl2: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    MatImpl2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Matrix<
         'a,
@@ -170,30 +184,33 @@ where
         Addition<
             'a,
             Item,
-            Matrix<'a, Item, MatImpl1, Layout, Size>,
-            MatrixFromRef<'a, Item, MatImpl2, Layout, Size>,
+            Matrix<'a, Item, MatImpl1, Layout, RS, CS>,
+            MatrixFromRef<'a, Item, MatImpl2, Layout, RS, CS>,
             Layout,
-            Size,
+            RS,
+            CS
         >,
         Layout,
-        Size,
+        RS,
+        CS
     >;
 
-    fn add(self, rhs: &'a Matrix<'a, Item, MatImpl2, Layout, Size>) -> Self::Output {
+    fn add(self, rhs: &'a Matrix<'a, Item, MatImpl2, Layout, RS, CS>) -> Self::Output {
         Matrix::new(Addition::new(self, Matrix::from_ref(rhs)))
     }
 }
 
 //&mat1 + mat2
-impl<'a, Item, MatImpl1, MatImpl2, Layout, Size>
-    std::ops::Add<Matrix<'a, Item, MatImpl2, Layout, Size>>
-    for &'a Matrix<'a, Item, MatImpl1, Layout, Size>
+impl<'a, Item, MatImpl1, MatImpl2, Layout, RS, CS>
+    std::ops::Add<Matrix<'a, Item, MatImpl2, Layout, RS, CS>>
+    for &'a Matrix<'a, Item, MatImpl1, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl1: MatrixTrait<'a, Item, Layout, Size>,
-    MatImpl2: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    MatImpl2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Matrix<
         'a,
@@ -201,30 +218,33 @@ where
         Addition<
             'a,
             Item,
-            MatrixFromRef<'a, Item, MatImpl1, Layout, Size>,
-            Matrix<'a, Item, MatImpl2, Layout, Size>,
+            MatrixFromRef<'a, Item, MatImpl1, Layout, RS, CS>,
+            Matrix<'a, Item, MatImpl2, Layout, RS, CS>,
             Layout,
-            Size,
+            RS,
+            CS
         >,
         Layout,
-        Size,
+        RS,
+        CS,
     >;
 
-    fn add(self, rhs: Matrix<'a, Item, MatImpl2, Layout, Size>) -> Self::Output {
+    fn add(self, rhs: Matrix<'a, Item, MatImpl2, Layout, RS, CS>) -> Self::Output {
         Matrix::new(Addition::new(Matrix::from_ref(self), rhs))
     }
 }
 
 //&mat1 + &mat2
-impl<'a, Item, MatImpl1, MatImpl2, Layout, Size>
-    std::ops::Add<&'a Matrix<'a, Item, MatImpl2, Layout, Size>>
-    for &'a Matrix<'a, Item, MatImpl1, Layout, Size>
+impl<'a, Item, MatImpl1, MatImpl2, Layout, RS, CS>
+    std::ops::Add<&'a Matrix<'a, Item, MatImpl2, Layout, RS, CS>>
+    for &'a Matrix<'a, Item, MatImpl1, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl1: MatrixTrait<'a, Item, Layout, Size>,
-    MatImpl2: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl1: MatrixTrait<'a, Item, Layout, RS, CS>,
+    MatImpl2: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Matrix<
         'a,
@@ -232,16 +252,18 @@ where
         Addition<
             'a,
             Item,
-            MatrixFromRef<'a, Item, MatImpl1, Layout, Size>,
-            MatrixFromRef<'a, Item, MatImpl2, Layout, Size>,
+            MatrixFromRef<'a, Item, MatImpl1, Layout, RS, CS>,
+            MatrixFromRef<'a, Item, MatImpl2, Layout, RS, CS>,
             Layout,
-            Size,
+            RS,
+            CS,
         >,
         Layout,
-        Size,
+        RS,
+        CS
     >;
 
-    fn add(self, rhs: &'a Matrix<'a, Item, MatImpl2, Layout, Size>) -> Self::Output {
+    fn add(self, rhs: &'a Matrix<'a, Item, MatImpl2, Layout, RS, CS>) -> Self::Output {
         Matrix::new(Addition::new(Matrix::from_ref(self), Matrix::from_ref(rhs)))
     }
 }

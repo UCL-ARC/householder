@@ -4,26 +4,29 @@ use crate::traits::*;
 use cauchy::{Scalar, c32, c64};
 use std::marker::PhantomData;
 
-pub struct ScalarMult<'a, Item, Mat, Layout, Size>(
+pub struct ScalarMult<'a, Item, Mat, Layout, RS, CS>(
     Mat,
     Item,
     PhantomData<Item>,
     PhantomData<Layout>,
-    PhantomData<Size>,
+    PhantomData<RS>,
+    PhantomData<CS>,
     PhantomData<&'a ()>,
 )
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Mat: MatrixTrait<'a, Item, Layout, Size>;
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>;
 
-impl<'a, Item, Mat, Layout, Size> ScalarMult<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> ScalarMult<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     pub fn new(mat: Mat, factor: Item) -> Self {
         Self(
@@ -33,29 +36,32 @@ where
             PhantomData,
             PhantomData,
             PhantomData,
+            PhantomData,
         )
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> Dimensions for ScalarMult<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> Dimensions for ScalarMult<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> SafeRandomAccess
-    for ScalarMult<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> SafeRandomAccess
+    for ScalarMult<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -69,13 +75,14 @@ where
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> UnsafeRandomAccess
-    for ScalarMult<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> UnsafeRandomAccess
+    for ScalarMult<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -89,59 +96,65 @@ where
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> SizeType for ScalarMult<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> SizeType for ScalarMult<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
-    type S = Size;
+    type R = RS;
+    type C = CS;
 }
 
-impl<'a, Item, Mat, Layout, Size> LayoutType<Layout> for ScalarMult<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> LayoutType<Layout> for ScalarMult<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {}
 
 macro_rules! scalar_mult_impl {
     ($Scalar:ty) => {
-        impl<'a, MatImpl, Layout, Size> std::ops::Mul<Matrix<'a, $Scalar, MatImpl, Layout, Size>>
+        impl<'a, MatImpl, Layout, RS, CS> std::ops::Mul<Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>>
             for $Scalar
         where
-            MatImpl: MatrixTrait<'a, $Scalar, Layout, Size>,
+            MatImpl: MatrixTrait<'a, $Scalar, Layout, RS, CS>,
             Layout: LayoutIdentifier,
-            Size: SizeIdentifier,
+            RS: SizeIdentifier,
+            CS: SizeIdentifier,
         {
             type Output = Matrix<
                 'a,
                 $Scalar,
-                ScalarMult<'a, $Scalar, Matrix<'a, $Scalar, MatImpl, Layout, Size>, Layout, Size>,
+                ScalarMult<'a, $Scalar, Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>, Layout, RS, CS>,
                 Layout,
-                Size,
+                RS,
+                CS,
             >;
 
-            fn mul(self, rhs: Matrix<'a, $Scalar, MatImpl, Layout, Size>) -> Self::Output {
+            fn mul(self, rhs: Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>) -> Self::Output {
                 Matrix::new(ScalarMult::new(rhs, self))
             }
         }
 
-        impl<'a, MatImpl, Layout, Size> std::ops::Mul<$Scalar>
-            for Matrix<'a, $Scalar, MatImpl, Layout, Size>
+        impl<'a, MatImpl, Layout, RS, CS> std::ops::Mul<$Scalar>
+            for Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>
         where
-            MatImpl: MatrixTrait<'a, $Scalar, Layout, Size>,
+            MatImpl: MatrixTrait<'a, $Scalar, Layout, RS, CS>,
             Layout: LayoutIdentifier,
-            Size: SizeIdentifier,
-        {
+            RS: SizeIdentifier,
+            CS: SizeIdentifier,
+            {
             type Output = Matrix<
                 'a,
                 $Scalar,
-                ScalarMult<'a, $Scalar, Matrix<'a, $Scalar, MatImpl, Layout, Size>, Layout, Size>,
+                ScalarMult<'a, $Scalar, Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>, Layout, RS, CS>,
                 Layout,
-                Size,
+                RS, CS,
             >;
 
             fn mul(self, rhs: $Scalar) -> Self::Output {
@@ -149,51 +162,57 @@ macro_rules! scalar_mult_impl {
             }
         }
 
-        impl<'a, MatImpl, Layout, Size> std::ops::Mul<&'a Matrix<'a, $Scalar, MatImpl, Layout, Size>>
+        impl<'a, MatImpl, Layout, RS, CS> std::ops::Mul<&'a Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>>
             for $Scalar
         where
-            MatImpl: MatrixTrait<'a, $Scalar, Layout, Size>,
+            MatImpl: MatrixTrait<'a, $Scalar, Layout, RS, CS>,
             Layout: LayoutIdentifier,
-            Size: SizeIdentifier,
-        {
+            RS: SizeIdentifier,
+            CS: SizeIdentifier,
+            {
             type Output = Matrix<
                 'a,
                 $Scalar,
                 ScalarMult<
                     'a,
                     $Scalar,
-                    MatrixFromRef<'a, $Scalar, MatImpl, Layout, Size>,
+                    MatrixFromRef<'a, $Scalar, MatImpl, Layout, RS, CS>,
                     Layout,
-                    Size,
+                    RS,
+                    CS
                 >,
                 Layout,
-                Size,
+                RS,
+                CS
             >;
 
-            fn mul(self, rhs: &'a Matrix<'a, $Scalar, MatImpl, Layout, Size>) -> Self::Output {
+            fn mul(self, rhs: &'a Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>) -> Self::Output {
                 Matrix::new(ScalarMult::new(Matrix::from_ref(rhs), self))
             }
         }
 
-        impl<'a, MatImpl, Layout, Size> std::ops::Mul<$Scalar>
-            for &'a Matrix<'a, $Scalar, MatImpl, Layout, Size>
+        impl<'a, MatImpl, Layout, RS, CS> std::ops::Mul<$Scalar>
+            for &'a Matrix<'a, $Scalar, MatImpl, Layout, RS, CS>
         where
-            MatImpl: MatrixTrait<'a, $Scalar, Layout, Size>,
+            MatImpl: MatrixTrait<'a, $Scalar, Layout, RS, CS>,
             Layout: LayoutIdentifier,
-            Size: SizeIdentifier,
-        {
+            RS: SizeIdentifier,
+            CS: SizeIdentifier,
+            {
             type Output = Matrix<
                 'a,
                 $Scalar,
                 ScalarMult<
                     'a,
                     $Scalar,
-                    MatrixFromRef<'a, $Scalar, MatImpl, Layout, Size>,
+                    MatrixFromRef<'a, $Scalar, MatImpl, Layout, RS, CS>,
                     Layout,
-                    Size,
+                    RS,
+                    CS,
                 >,
                 Layout,
-                Size,
+                RS,
+                CS
             >;
 
             fn mul(self, rhs: $Scalar) -> Self::Output {

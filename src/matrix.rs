@@ -2,58 +2,62 @@
 //!
 
 use crate::base_types::*;
-use crate::iterators::*;
+//use crate::iterators::*;
 use crate::traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
-pub type MatrixFromRef<'a, Item, MatImpl, Layout, Size> = Matrix<
+pub type MatrixFromRef<'a, Item, MatImpl, Layout, RS, CS> = Matrix<
     'a,
     Item,
-    MatrixRef<'a, Item, Matrix<'a, Item, MatImpl, Layout, Size>, Layout, Size>,
+    MatrixRef<'a, Item, Matrix<'a, Item, MatImpl, Layout, RS, CS>, Layout, RS, CS>,
     Layout,
-    Size,
+    RS,
+    CS
 >;
 
-pub type CMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, CLayout>, CLayout, MatrixD>;
-pub type FMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, FLayout>, FLayout, MatrixD>;
-pub type VectorD<'a, Item> = Matrix<'a, Item, DynamicBaseVector<Item>, VLayout, MatrixD>;
+// pub type CMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, CLayout>, CLayout, Dynamic, Dynamic>;
+// pub type FMatrixD<'a, Item> = Matrix<'a, Item, DynamicMatrix<Item, FLayout>, FLayout, Dynamic, Dynamic>;
+// pub type VectorD<'a, Item> = Matrix<'a, Item, DynamicBaseVector<Item>, VLayout, Fixed1, Dynamic>;
 
 
 /// A matrix is a simple enum struct.
 /// This can be a base matrix or something
 /// representing the sum, product, etc. on
 /// matrices.
-pub struct Matrix<'a, Item, MatImpl, Layout, Size>(
+pub struct Matrix<'a, Item, MatImpl, Layout, RS, CS>(
     MatImpl,
     PhantomData<Item>,
     PhantomData<Layout>,
-    PhantomData<Size>,
+    PhantomData<RS>,
+    PhantomData<CS>,
     PhantomData<&'a ()>,
 )
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>;
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>;
 
-impl<'a, Item, MatImpl, Layout, Size> Matrix<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, MatImpl, Layout, RS, CS> Matrix<'a, Item, MatImpl, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     pub fn new(mat: MatImpl) -> Self {
-        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
+        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 
-    /// Return a new iterator that iterates through the matrix in memory order
-    pub fn iter(
-        &self,
-    ) -> MatrixIterator<'a, Item, Matrix<Item, MatImpl, Layout, Size>, Layout, Size> {
-        MatrixIterator::new(self)
-    }
+    // /// Return a new iterator that iterates through the matrix in memory order
+    // pub fn iter(
+    //     &self,
+    // ) -> MatrixIterator<'a, Item, Matrix<Item, MatImpl, Layout, Size>, Layout, Size> {
+    //     MatrixIterator::new(self)
+    // }
 
     /// Convert a reference to a matrix into an owned matrix.
     ///
@@ -61,21 +65,21 @@ where
     /// not allocate new memory. This allows handing over matrices to functions
     /// that expect a matrix and not a reference to a matrix.
     pub fn from_ref(
-        mat: &'a Matrix<'a, Item, MatImpl, Layout, Size>,
-    ) -> MatrixFromRef<'a, Item, MatImpl, Layout, Size> {
+        mat: &'a Matrix<'a, Item, MatImpl, Layout, RS, CS>,
+    ) -> MatrixFromRef<'a, Item, MatImpl, Layout, RS, CS> {
         Matrix::new(MatrixRef::new(mat))
     }
 }
 
-impl<'a, Item, MatImpl, Layout: LayoutIdentifier> Matrix<'a, Item, MatImpl, Layout, MatrixD>
+impl<'a, Item, MatImpl, Layout: LayoutIdentifier> Matrix<'a, Item, MatImpl, Layout, Dynamic, Dynamic>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, MatrixD>,
+    MatImpl: MatrixTrait<'a, Item, Layout, Dynamic, Dynamic>,
 {
-    pub fn eval(&self) -> Matrix<Item, DynamicMatrix<Item, Layout>, Layout, MatrixD> {
+    pub fn eval(&self) -> Matrix<Item, DynamicMatrix<Item, Layout>, Layout, Dynamic, Dynamic> {
         let (rows, cols) = self.dim();
         let nelems = rows * cols;
-        let mut res = Matrix::<Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>::from_dimension(
+        let mut res = Matrix::<Item, DynamicMatrix<Item, Layout>, Layout, Dynamic, Dynamic>::from_dimension(
             rows, cols,
         );
 
@@ -89,14 +93,14 @@ where
 }
 
 
-impl<'a, Item: Scalar, Layout: LayoutIdentifier> Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD> {
+impl<'a, Item: Scalar, Layout: LayoutIdentifier> Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, Dynamic, Dynamic> {
     /// Create a new matrix with dimensions (rows, cols) using C Layout
     pub fn from_dimension(rows: usize, cols: usize) -> Self {
         Self::new(DynamicMatrix::<Item, Layout>::new(rows, cols))
     }
 }
 
-impl<'a, Item: Scalar, Layout: LayoutIdentifier> Pointer for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD> {
+impl<'a, Item: Scalar, Layout: LayoutIdentifier> Pointer for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, Dynamic, Dynamic> {
     type Item = Item;
 
     fn as_ptr(&self) -> *const Self::Item {
@@ -107,7 +111,7 @@ impl<'a, Item: Scalar, Layout: LayoutIdentifier> Pointer for Matrix<'a, Item, Dy
 
 
 impl<'a, Item: Scalar, Layout: LayoutIdentifier> PointerMut
-    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>
+    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, Dynamic, Dynamic>
 {
     type Item = Item;
 
@@ -118,24 +122,27 @@ impl<'a, Item: Scalar, Layout: LayoutIdentifier> PointerMut
 
 
 
-impl<'a, Item, MatImpl, Layout, Size> Dimensions for Matrix<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, MatImpl, Layout, RS, CS> Dimensions for Matrix<'a, Item, MatImpl, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+
 {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size> SafeRandomAccess for Matrix<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, MatImpl, Layout, RS, CS> SafeRandomAccess for Matrix<'a, Item, MatImpl, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -150,7 +157,7 @@ where
 }
 
 impl<'a, Item, Layout: LayoutIdentifier> SafeMutableRandomAccess
-    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>
+    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, Dynamic, Dynamic>
 where
     Item: Scalar,
 {
@@ -167,7 +174,7 @@ where
 }
 
 impl<'a, Item, Layout: LayoutIdentifier> UnsafeMutableRandomAccess
-    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, MatrixD>
+    for Matrix<'a, Item, DynamicMatrix<Item, Layout>, Layout, Dynamic, Dynamic>
 where
     Item: Scalar,
 {
@@ -184,12 +191,13 @@ where
 }
 
 
-impl<'a, Item, MatImpl, Layout, Size> UnsafeRandomAccess for Matrix<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, MatImpl, Layout, RS, CS> UnsafeRandomAccess for Matrix<'a, Item, MatImpl, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -203,68 +211,77 @@ where
     }
 }
 
-impl<'a, Item, MatImpl, Layout, Size> SizeType for Matrix<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, MatImpl, Layout, RS, CS> SizeType for Matrix<'a, Item, MatImpl, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-{
-    type S = Size;
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+
+    {
+    type R = RS;
+    type C = CS;
 }
 
-impl<'a, Item, MatImpl, Layout, Size> LayoutType<Layout> for Matrix<'a, Item, MatImpl, Layout, Size>
+impl<'a, Item, MatImpl, Layout, RS, CS> LayoutType<Layout> for Matrix<'a, Item, MatImpl, Layout, RS, CS>
 where
     Item: Scalar,
-    MatImpl: MatrixTrait<'a, Item, Layout, Size>,
+    MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {}
 
 /// A MatrixRef is like a matrix but holds a reference to an implementation.
-pub struct MatrixRef<'a, Item, Mat, Layout, Size>(
+pub struct MatrixRef<'a, Item, Mat, Layout, RS, CS>(
     &'a Mat,
     PhantomData<Item>,
     PhantomData<Layout>,
-    PhantomData<Size>,
+    PhantomData<RS>,
+    PhantomData<CS>,
     PhantomData<&'a ()>,
 )
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Mat: MatrixTrait<'a, Item, Layout, Size>;
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>;
 
-impl<'a, Item, Mat, Layout, Size> MatrixRef<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> MatrixRef<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     pub fn new(mat: &'a Mat) -> Self {
-        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
+        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> Dimensions for MatrixRef<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> Dimensions for MatrixRef<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     fn dim(&self) -> (usize, usize) {
         self.0.dim()
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> SafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> SafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -278,12 +295,13 @@ where
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> UnsafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> UnsafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
     type Output = Item;
 
@@ -297,29 +315,26 @@ where
     }
 }
 
-impl<'a, Item, Mat, Layout, Size> SizeType for MatrixRef<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> SizeType for MatrixRef<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {
-    type S = Size;
+    type R = RS;
+    type C = CS;
 }
 
-impl<'a, Item, Mat, Layout, Size> LayoutType<Layout> for MatrixRef<'a, Item, Mat, Layout, Size>
+impl<'a, Item, Mat, Layout, RS, CS> LayoutType<Layout> for MatrixRef<'a, Item, Mat, Layout, RS, CS>
 where
     Item: Scalar,
-    Mat: MatrixTrait<'a, Item, Layout, Size>,
+    Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
 {}
-
-impl<'a, Item: Scalar> VectorLength for  VectorD<'a, Item> {
-    fn len(&self) -> usize {
-        self.0.len()
-    }
-} 
 
 
 

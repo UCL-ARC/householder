@@ -9,9 +9,10 @@ pub enum MemoryLayout {
 }
 
 pub enum MatrixSizeType {
-    MATRIX2,
-    MATRIX3,
-    MATRIXD,
+    ONE,
+    TWO,
+    THREE,
+    DYNAMIC,
 }
 
 /// Bounds checked random access for matrices.
@@ -83,63 +84,49 @@ impl<
 
 // Data types to specify types of fixed size or dynamic matrices
 
-/// Fixed size 2x2 matrix
-pub struct Matrix2;
+//1 Fixed Dimension 1
+pub struct Fixed1;
 
-/// Fixed size 3x3 matrix
-pub struct Matrix3;
+/// Fixed Dimension 2
 
-/// Dynamic sized matrix
-pub struct MatrixD;
+pub struct Fixed2;
 
-// Length 2 row vector
-pub struct RowVector2;
+/// Fixed Dimension 3
+pub struct Fixed3;
 
-// Length 3 row vector
-pub struct RowVector3;
+/// Dynamically sized dimension
+pub struct Dynamic;
 
-// Dynamix length row vector
-pub struct RowVectorD;
+pub trait SizeIdentifier {
+    const IDENT: MatrixSizeType;
+}
 
-// Length 2 col vector
-pub struct ColVector2;
-
-// Length 3 col vector
-pub struct ColVector3;
-
-// Dynamix length col vector
-pub struct ColVectorD;
-
-pub trait SizeIdentifier {}
-
-impl SizeIdentifier for Matrix2 {}
-impl SizeIdentifier for Matrix3 {}
-impl SizeIdentifier for MatrixD {}
+impl SizeIdentifier for Fixed1 {
+    const IDENT: MatrixSizeType = MatrixSizeType::ONE;
+}
+impl SizeIdentifier for Fixed2 {
+    const IDENT: MatrixSizeType = MatrixSizeType::TWO;
+}
+impl SizeIdentifier for Fixed3 {
+    const IDENT: MatrixSizeType = MatrixSizeType::THREE;
+}
+impl SizeIdentifier for Dynamic {
+    const IDENT: MatrixSizeType = MatrixSizeType::DYNAMIC;
+}
 
 pub trait SizeType {
-    type S: SizeIdentifier;
+    type R: SizeIdentifier;
+    type C: SizeIdentifier;
 }
 
-pub trait Size<S: SizeIdentifier>: SizeType<S = S> {
+pub trait Size<R: SizeIdentifier, C: SizeIdentifier>: SizeType<R = R, C = C> {
     // Return the size type of the object
-    fn size_type(&self) -> MatrixSizeType;
+    fn size_type(&self) -> (MatrixSizeType, MatrixSizeType);
 }
 
-impl<T: SizeType<S = Matrix2>> Size<Matrix2> for T {
-    fn size_type(&self) -> MatrixSizeType {
-        MatrixSizeType::MATRIX2
-    }
-}
-
-impl<T: SizeType<S = Matrix3>> Size<Matrix3> for T {
-    fn size_type(&self) -> MatrixSizeType {
-        MatrixSizeType::MATRIX3
-    }
-}
-
-impl<T: SizeType<S = MatrixD>> Size<MatrixD> for T {
-    fn size_type(&self) -> MatrixSizeType {
-        MatrixSizeType::MATRIXD
+impl<R: SizeIdentifier, C: SizeIdentifier, T: SizeType<R=R, C=C>> Size<R, C> for T {
+    fn size_type(&self) -> (MatrixSizeType, MatrixSizeType) {
+        (R::IDENT, C::IDENT)
     }
 }
 
@@ -173,7 +160,6 @@ impl LayoutIdentifier for FLayout {
     }
 }
 impl LayoutIdentifier for VLayout {
-
     // Choosing C Layout here. Fortran and C Layout are identical for vectors
     // and both are possible.
     #[inline]
@@ -222,14 +208,14 @@ pub trait IterableMut<'a, Item: Scalar, Iter: Iterator<Item = &'a mut Item>> {
 }
 
 /// Combined trait that summarizes basic matrix properties
-pub trait MatrixTrait<'a, Item: Scalar, Layout: LayoutIdentifier, Size: SizeIdentifier>:
-    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>
+pub trait MatrixTrait<'a, Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>:
+    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>
 {
 }
 
 /// Combined trait for mutable matrices
-pub trait MatrixMutTrait<'a, Item: Scalar, Layout: LayoutIdentifier, Size: SizeIdentifier>:
-    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>
+pub trait MatrixMutTrait<'a, Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>:
+    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>
 {
 }
 
@@ -248,22 +234,24 @@ pub trait PointerMut {
 }
 
 // Implement `MatrixTrait` for any eligible object.
-impl<'a, Item, Layout, Size, Mat> MatrixTrait<'a, Item, Layout, Size> for Mat
+impl<'a, Item, Layout, RS, CS, Mat> MatrixTrait<'a, Item, Layout, RS, CS> for Mat
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Mat: RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    Mat: RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>,
 {
 }
 
 // Implement `MatrixTraitMut` for any eligible object.
-impl<'a, Item, Layout, Size, Mat> MatrixMutTrait<'a, Item, Layout, Size> for Mat
+impl<'a, Item, Layout, RS, CS, Mat> MatrixMutTrait<'a, Item, Layout, RS, CS> for Mat
 where
     Item: Scalar,
     Layout: LayoutIdentifier,
-    Size: SizeIdentifier,
-    Mat: RandomAccessMut<Item> + Dimensions + LayoutType<Layout> + SizeType<S = Size>,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    Mat: RandomAccessMut<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>,
 {
 }
 
