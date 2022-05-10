@@ -10,7 +10,7 @@ macro_rules! mat {
         crate::matrix::Matrix::<
             '_,
             $ScalarType,
-            crate::base_types::DynamicMatrix<$ScalarType, $Layout>,
+            crate::base_types::DynamicMatrix<$ScalarType, $Layout, Dynamic, Dynamic>,
             $Layout,
             crate::traits::Dynamic,
             crate::traits::Dynamic,
@@ -28,10 +28,10 @@ macro_rules! col_vec {
         crate::matrix::Matrix::<
             '_,
             $ScalarType,
-            crate::base_types::DynamicMatrix<$ScalarType, VLayout>,
+            crate::base_types::DynamicMatrix<$ScalarType, VLayout, Dynamic, Fixed1>,
             VLayout,
             crate::traits::Dynamic,
-            crrate::traits::Dynamic,
+            crate::traits::Fixed1,
         >::from_dimension($len, 1)
     };
 }

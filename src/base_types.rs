@@ -3,42 +3,45 @@ use crate::traits::*;
 use std::marker::PhantomData;
 use cauchy::Scalar;
 
-pub type DynamicBaseVector<Item> = DynamicMatrix<Item, VLayout>;
 
-
-pub struct DynamicMatrix<Item: Scalar, L: LayoutIdentifier> {
+pub struct DynamicMatrix<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> {
     data: Vec<Item>,
     dim: (usize, usize),
-    phantom_layout: PhantomData<L>
+    phantom_layout: PhantomData<L>,
+    phantom_r: PhantomData<RS>,
+    phantom_c: PhantomData<CS>,
 }
 
-impl<Item: Scalar, L: LayoutIdentifier> DynamicMatrix<Item, L> {
+impl<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> DynamicMatrix<Item, L, RS, CS> {
     /// New dynamic matrix with dimensions (rows, cols)
     pub fn new(rows: usize, cols: usize) -> Self {
-        DynamicMatrix::<Item, L> {
+        DynamicMatrix::<Item, L, RS, CS> {
             data: vec![num::cast::<f64, Item>(0.0).unwrap(); rows * cols],
             dim: (rows, cols),
-            phantom_layout: PhantomData
+            phantom_layout: PhantomData,
+            phantom_r: PhantomData,
+            phantom_c: PhantomData,
         }
     }
 }
 
-impl<Item: Scalar, L: LayoutIdentifier> Dimensions for DynamicMatrix<Item, L> {
+impl<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> Dimensions for DynamicMatrix<Item, L, RS, CS> {
     fn dim(&self) -> (usize, usize) {
         self.dim
     }
 }
 
-impl<Item: Scalar, L: LayoutIdentifier> LayoutType<L> for DynamicMatrix<Item, L> {}
+impl<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> LayoutType<L> for DynamicMatrix<Item, L, RS, CS> {}
 
 
-impl<Item: Scalar, L: LayoutIdentifier> SizeType for DynamicMatrix<Item, L> {
-    type R = Dynamic;
-    type C = Dynamic;
+impl<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> SizeType for DynamicMatrix<Item, L, RS, CS> {
+    type R = RS;
+    type C = CS;
 }
 
 
-impl<Item: Scalar, Layout: LayoutIdentifier> SafeRandomAccess for DynamicMatrix<Item, Layout> {
+
+impl<Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> SafeRandomAccess for DynamicMatrix<Item, Layout, RS, CS> {
     type Output = Item;
 
     #[inline]
@@ -51,7 +54,7 @@ impl<Item: Scalar, Layout: LayoutIdentifier> SafeRandomAccess for DynamicMatrix<
     }
 }
 
-impl<Item: Scalar, Layout: LayoutIdentifier> UnsafeRandomAccess for DynamicMatrix<Item, Layout> {
+impl<Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> UnsafeRandomAccess for DynamicMatrix<Item, Layout, RS, CS> {
     type Output = Item;
 
     #[inline]
@@ -64,7 +67,7 @@ impl<Item: Scalar, Layout: LayoutIdentifier> UnsafeRandomAccess for DynamicMatri
     }
 }
 
-impl<Item: Scalar, Layout: LayoutIdentifier> SafeMutableRandomAccess for DynamicMatrix<Item, Layout> {
+impl<Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> SafeMutableRandomAccess for DynamicMatrix<Item, Layout, RS, CS> {
     type Output = Item;
 
     #[inline]
@@ -78,7 +81,7 @@ impl<Item: Scalar, Layout: LayoutIdentifier> SafeMutableRandomAccess for Dynamic
     }
 }
 
-impl<Item: Scalar, Layout: LayoutIdentifier> UnsafeMutableRandomAccess for DynamicMatrix<Item, Layout> {
+impl<Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> UnsafeMutableRandomAccess for DynamicMatrix<Item, Layout, RS, CS> {
     type Output = Item;
 
     #[inline]
@@ -92,7 +95,7 @@ impl<Item: Scalar, Layout: LayoutIdentifier> UnsafeMutableRandomAccess for Dynam
     }
 }
 
-impl<Item: Scalar, L: LayoutIdentifier> Pointer for DynamicMatrix<Item, L> {
+impl<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> Pointer for DynamicMatrix<Item, L, RS, CS> {
     type Item = Item;
 
     fn as_ptr(&self) -> *const Item {
@@ -101,7 +104,7 @@ impl<Item: Scalar, L: LayoutIdentifier> Pointer for DynamicMatrix<Item, L> {
 }
 
 
-impl<Item: Scalar, L: LayoutIdentifier> PointerMut for DynamicMatrix<Item, L> {
+impl<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> PointerMut for DynamicMatrix<Item, L, RS, CS> {
     type Item = Item;
 
     fn as_mut_ptr(&mut self) -> *mut Item {
@@ -109,11 +112,11 @@ impl<Item: Scalar, L: LayoutIdentifier> PointerMut for DynamicMatrix<Item, L> {
     }
 }
 
-impl<Item: Scalar> VectorLength for DynamicBaseVector<Item> {
-    fn len(&self) -> usize {
-        self.data.len()
-    }
-}
+// impl<Item: Scalar> VectorLength for DynamicBaseVector<Item> {
+//     fn len(&self) -> usize {
+//         self.data.len()
+//     }
+// }
 
 
 // #[cfg(test)]
