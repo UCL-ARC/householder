@@ -2,20 +2,44 @@
 
 use crate::matrix::*;
 use crate::traits::*;
-use cauchy::{c32, c64};
+use cauchy::{c32, c64, Scalar};
 use matrixmultiply::{cgemm, dgemm, sgemm, zgemm, CGemmOption};
 use num;
 
-macro_rules! dot_impl_real {
-    ($Scalar:ty, $Blas:ident) => {
-        impl<'a> CMatrixD<'a, $Scalar> {
+pub trait Dot<Rhs> {
+    type Output;
+
+    fn dot(&self, rhs: &Rhs) -> Self::Output;
+}
+
+// impl<'a, 'b, Item: Scalar> Dot<ColVectorD<'a, Item>> for CMatrixD<'b, Item> {
+//     type Output = ColVectorD<'static, Item>;
+
+//     fn dot(&self, rhs: &ColVectorD<'a, Item>) -> Self::Output {
+
+//         let dim = self.dim();
+
+//         let mut res = ColVectorD<'static, Item>;
+
+//         for row_index in 0..dim.0 {
+//             for col_index in 0..dim.1 {
+
+//             }
+//         }
+
+//     }
+
+
+// }
+
+macro_rules! mat_mat_dot_impl_real {
+    ($Scalar:ty, $Blas:ident, $MatType:ident) => {
+        impl<'a, 'b> Dot<$MatType<'a, $Scalar>> for $MatType<'b, $Scalar> {
+            type Output = $MatType<'static, $Scalar>;
             /// Return the product of this matrix with another matrix.
-            pub fn dot<Other: Dimensions + LayoutType<CLayout> + Pointer<Item = $Scalar>>(
-                &self,
-                other: Other,
-            ) -> CMatrixD<'a, $Scalar> {
+            fn dot(&self, rhs: &$MatType<'a, $Scalar>) -> Self::Output {
                 let dim1 = self.dim();
-                let dim2 = other.dim();
+                let dim2 = rhs.dim();
 
                 assert_eq!(
                     dim1.1, dim2.0,
@@ -27,67 +51,14 @@ macro_rules! dot_impl_real {
                 let k = dim1.1;
                 let n = dim2.1;
 
-                let rsa = k as isize;
-                let csa: isize = 1;
-                let rsb = n as isize;
-                let csb: isize = 1;
-                let rsc = n as isize;
-                let csc: isize = 1;
+                let mut res = $MatType::<$Scalar>::from_dimension(m, n);
 
-                let mut res = CMatrixD::<$Scalar>::from_dimension(m, n);
-
-                unsafe {
-                    $Blas(
-                        m,
-                        k,
-                        n,
-                        num::cast::<f64, $Scalar>(1.0).unwrap(),
-                        self.as_ptr(),
-                        rsa,
-                        csa,
-                        other.as_ptr(),
-                        rsb,
-                        csb,
-                        num::cast::<f64, $Scalar>(0.0).unwrap(),
-                        res.as_mut_ptr(),
-                        rsc,
-                        csc,
-                    );
-                }
-
-                res
-            }
-        }
-
-        impl<'a> FMatrixD<'a, $Scalar> {
-            /// Return the product of this matrix with another matrix.
-            pub fn dot<
-                Other: Dimensions + LayoutType<FLayout> + Pointer<Item = $Scalar>,
-            >(
-                &self,
-                other: Other,
-            ) -> FMatrixD<'a, $Scalar> {
-                let dim1 = self.dim();
-                let dim2 = other.dim();
-
-                assert_eq!(
-                    dim1.1, dim2.0,
-                    "Matrix multiply incompatible dimensions: A = {:#?}, B = {:#?}",
-                    dim1, dim2
-                );
-
-                let m = dim1.0;
-                let k = dim1.1;
-                let n = dim2.1;
-
-                let rsa: isize = 1;
-                let csa: isize = m as isize;
-                let rsb: isize = 1;
-                let csb: isize = k as isize;
-                let rsc: isize = 1;
-                let csc: isize = m as isize;
-
-                let mut res = FMatrixD::<$Scalar>::from_dimension(m, n);
+                let rsa = self.row_stride() as isize;
+                let csa = self.column_stride() as isize;
+                let rsb = rhs.row_stride() as isize;
+                let csb = rhs.column_stride() as isize;
+                let rsc = res.row_stride() as isize;
+                let csc = res.column_stride() as isize;
 
                 unsafe {
                     $Blas(
@@ -98,7 +69,7 @@ macro_rules! dot_impl_real {
                         self.as_ptr(),
                         rsa,
                         csa,
-                        other.as_ptr(),
+                        rhs.as_ptr(),
                         rsb,
                         csb,
                         num::cast::<f64, $Scalar>(0.0).unwrap(),
@@ -114,19 +85,15 @@ macro_rules! dot_impl_real {
     };
 }
 
-dot_impl_real!(f32, sgemm);
-dot_impl_real!(f64, dgemm);
 
-macro_rules! dot_impl_complex {
-    ($Scalar:ty, $Real:ty, $Blas:ident) => {
-        impl<'a> CMatrixD<'a, $Scalar> {
+macro_rules! mat_mat_dot_impl_complex {
+    ($Scalar:ty, $Real:ty, $Blas:ident, $MatType:ident) => {
+        impl<'a, 'b> Dot<$MatType<'a, $Scalar>> for $MatType<'b, $Scalar> {
+            type Output = $MatType<'static, $Scalar>;
             /// Return the product of this matrix with another matrix.
-            pub fn dot<Other: Dimensions + LayoutType<CLayout> + Pointer<Item = $Scalar>>(
-                &self,
-                other: Other,
-            ) -> CMatrixD<'a, $Scalar> {
+            fn dot(&self, rhs: &$MatType<'a, $Scalar>) -> Self::Output {
                 let dim1 = self.dim();
-                let dim2 = other.dim();
+                let dim2 = rhs.dim();
 
                 assert_eq!(
                     dim1.1, dim2.0,
@@ -138,14 +105,14 @@ macro_rules! dot_impl_complex {
                 let k = dim1.1;
                 let n = dim2.1;
 
-                let rsa = k as isize;
-                let csa: isize = 1;
-                let rsb = n as isize;
-                let csb: isize = 1;
-                let rsc = n as isize;
-                let csc: isize = 1;
+                let mut res = $MatType::<$Scalar>::from_dimension(m, n);
 
-                let mut res = CMatrixD::<$Scalar>::from_dimension(m, n);
+                let rsa = self.row_stride() as isize;
+                let csa = self.column_stride() as isize;
+                let rsb = rhs.row_stride() as isize;
+                let csb = rhs.column_stride() as isize;
+                let rsc = res.row_stride() as isize;
+                let csc = res.column_stride() as isize;
 
                 let one: [$Real; 2] = [1.0, 0.0];
                 let zero: [$Real; 2] = [0.0, 0.0];
@@ -161,7 +128,7 @@ macro_rules! dot_impl_complex {
                         self.as_ptr() as *const [$Real; 2],
                         rsa,
                         csa,
-                        other.as_ptr() as *const [$Real; 2],
+                        rhs.as_ptr() as *const [$Real; 2],
                         rsb,
                         csb,
                         zero,
@@ -175,68 +142,18 @@ macro_rules! dot_impl_complex {
             }
         }
 
-        impl<'a> FMatrixD<'a, $Scalar> {
-            /// Return the product of this matrix with another matrix.
-            pub fn dot<
-                Other: Dimensions + LayoutType<FLayout> + Pointer<Item = $Scalar>,
-            >(
-                &self,
-                other: Other,
-            ) -> FMatrixD<'a, $Scalar> {
-                let dim1 = self.dim();
-                let dim2 = other.dim();
+        };
+    }
 
-                assert_eq!(
-                    dim1.1, dim2.0,
-                    "Matrix multiply incompatible dimensions: A = {:#?}, B = {:#?}",
-                    dim1, dim2
-                );
 
-                let m = dim1.0;
-                let k = dim1.1;
-                let n = dim2.1;
-
-                let rsa: isize = 1;
-                let csa: isize = m as isize;
-                let rsb: isize = 1;
-                let csb: isize = k as isize;
-                let rsc: isize = 1;
-                let csc: isize = m as isize;
-
-                let mut res = FMatrixD::<$Scalar>::from_dimension(m, n);
-
-                let one: [$Real; 2] = [1.0, 0.0];
-                let zero: [$Real; 2] = [0.0, 0.0];
-
-                unsafe {
-                    $Blas(
-                        CGemmOption::Standard,
-                        CGemmOption::Standard,
-                        m,
-                        k,
-                        n,
-                        one,
-                        self.as_ptr() as *const [$Real; 2],
-                        rsa,
-                        csa,
-                        other.as_ptr() as *const [$Real; 2],
-                        rsb,
-                        csb,
-                        zero,
-                        res.as_mut_ptr() as *mut [$Real; 2],
-                        rsc,
-                        csc,
-                    );
-                }
-
-                res
-            }
-        }
-    };
-}
-
-dot_impl_complex!(c32, f32, cgemm);
-dot_impl_complex!(c64, f64, zgemm);
+mat_mat_dot_impl_real!(f32, sgemm, FMatrixD);
+mat_mat_dot_impl_real!(f32, sgemm, CMatrixD);
+mat_mat_dot_impl_real!(f64, dgemm, CMatrixD);    
+mat_mat_dot_impl_real!(f64, dgemm, FMatrixD);    
+mat_mat_dot_impl_complex!(c32, f32, cgemm, CMatrixD);
+mat_mat_dot_impl_complex!(c32, f32, cgemm, FMatrixD);
+mat_mat_dot_impl_complex!(c64, f64, zgemm, CMatrixD);
+mat_mat_dot_impl_complex!(c64, f64, zgemm, FMatrixD);
 
 #[cfg(test)]
 mod test {
@@ -279,7 +196,7 @@ mod test {
         *expected.get_mut(1, 2) = 152.0;
         *expected.get_mut(1, 3) = 164.0;
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -322,7 +239,7 @@ mod test {
         *expected.get_mut(1, 2) = 152.0;
         *expected.get_mut(1, 3) = 164.0;
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -365,7 +282,7 @@ mod test {
         *expected.get_mut(1, 2) = 152.0;
         *expected.get_mut(1, 3) = 164.0;
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -408,7 +325,7 @@ mod test {
         *expected.get_mut(1, 2) = 152.0;
         *expected.get_mut(1, 3) = 164.0;
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -416,9 +333,6 @@ mod test {
             }
         }
     }
-
-
-
 
     #[test]
     fn dot_product_complex_double_c() {
@@ -431,7 +345,7 @@ mod test {
         let mut count = 0;
         for row in 0..dim1.0 {
             for col in 0..dim1.1 {
-                *mat1.get_mut(row, col) = c64::new(1.0, 1.0)  * c64::new(count as f64, 0.0);
+                *mat1.get_mut(row, col) = c64::new(1.0, 1.0) * c64::new(count as f64, 0.0);
                 count += 1;
             }
         }
@@ -454,7 +368,7 @@ mod test {
         *expected.get_mut(1, 2) = c64::new(-152.0, 456.0);
         *expected.get_mut(1, 3) = c64::new(-164.0, 492.0);
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -475,7 +389,7 @@ mod test {
         let mut count = 0;
         for row in 0..dim1.0 {
             for col in 0..dim1.1 {
-                *mat1.get_mut(row, col) = c64::new(1.0, 1.0)  * c64::new(count as f64, 0.0);
+                *mat1.get_mut(row, col) = c64::new(1.0, 1.0) * c64::new(count as f64, 0.0);
                 count += 1;
             }
         }
@@ -498,7 +412,7 @@ mod test {
         *expected.get_mut(1, 2) = c64::new(-152.0, 456.0);
         *expected.get_mut(1, 3) = c64::new(-164.0, 492.0);
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -519,7 +433,7 @@ mod test {
         let mut count = 0;
         for row in 0..dim1.0 {
             for col in 0..dim1.1 {
-                *mat1.get_mut(row, col) = c32::new(1.0, 1.0)  * c32::new(count as f32, 0.0);
+                *mat1.get_mut(row, col) = c32::new(1.0, 1.0) * c32::new(count as f32, 0.0);
                 count += 1;
             }
         }
@@ -542,7 +456,7 @@ mod test {
         *expected.get_mut(1, 2) = c32::new(-152.0, 456.0);
         *expected.get_mut(1, 3) = c32::new(-164.0, 492.0);
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -563,7 +477,7 @@ mod test {
         let mut count = 0;
         for row in 0..dim1.0 {
             for col in 0..dim1.1 {
-                *mat1.get_mut(row, col) = c32::new(1.0, 1.0)  * c32::new(count as f32, 0.0);
+                *mat1.get_mut(row, col) = c32::new(1.0, 1.0) * c32::new(count as f32, 0.0);
                 count += 1;
             }
         }
@@ -586,7 +500,7 @@ mod test {
         *expected.get_mut(1, 2) = c32::new(-152.0, 456.0);
         *expected.get_mut(1, 3) = c32::new(-164.0, 492.0);
 
-        let actual = mat1.dot(mat2);
+        let actual = mat1.dot(&mat2);
 
         for row in 0..dim1.0 {
             for col in 0..dim2.1 {
@@ -595,7 +509,4 @@ mod test {
             }
         }
     }
-
-
-
 }

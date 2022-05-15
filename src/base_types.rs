@@ -112,37 +112,3 @@ impl<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier> 
     }
 }
 
-// impl<Item: Scalar> VectorLength for DynamicBaseVector<Item> {
-//     fn len(&self) -> usize {
-//         self.data.len()
-//     }
-// }
-
-
-// #[cfg(test)]
-// mod test {
-
-//     use super::*;
-//     use crate::mat;
-
-//     #[test]
-//     fn test_fortran_ordering() {
-
-//         let mut mat = mat![f64, (2, 4), FLayout];
-
-//         *mat.get_mut(1, 2) = 3.0;
-
-//         assert_eq!(mat.get1d(5), 3.0);
-//     }
-
-//     #[test]
-//     fn test_c_ordering() {
-
-//         let mut mat = mat![f64, (2, 4), CLayout];
-
-//         *mat.get_mut(1, 2) = 3.0;
-
-//         assert_eq!(mat.get1d(6), 3.0);
-//     }
-
-// }

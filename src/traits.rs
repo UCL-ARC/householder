@@ -124,7 +124,7 @@ pub trait Size<R: SizeIdentifier, C: SizeIdentifier>: SizeType<R = R, C = C> {
     fn size_type(&self) -> (MatrixSizeType, MatrixSizeType);
 }
 
-impl<R: SizeIdentifier, C: SizeIdentifier, T: SizeType<R=R, C=C>> Size<R, C> for T {
+impl<R: SizeIdentifier, C: SizeIdentifier, T: SizeType<R = R, C = C>> Size<R, C> for T {
     fn size_type(&self) -> (MatrixSizeType, MatrixSizeType) {
         (R::IDENT, C::IDENT)
     }
@@ -208,14 +208,24 @@ pub trait IterableMut<'a, Item: Scalar, Iter: Iterator<Item = &'a mut Item>> {
 }
 
 /// Combined trait that summarizes basic matrix properties
-pub trait MatrixTrait<'a, Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>:
-    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>
+pub trait MatrixTrait<
+    'a,
+    Item: Scalar,
+    Layout: LayoutIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+>: RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R = RS, C = CS>
 {
 }
 
 /// Combined trait for mutable matrices
-pub trait MatrixMutTrait<'a, Item: Scalar, Layout: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>:
-    RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>
+pub trait MatrixMutTrait<
+    'a,
+    Item: Scalar,
+    Layout: LayoutIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+>: RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R = RS, C = CS>
 {
 }
 
@@ -225,6 +235,39 @@ pub trait Pointer {
 
     fn as_ptr(&self) -> *const Self::Item;
 }
+
+/// Return a slice from data
+pub trait Slice<'a> {
+    type Item: Scalar;
+
+    fn as_slice(&'a self) -> &'a [Self::Item];
+}
+
+/// Return a mutable slice from data
+pub trait SliceMut<'a> {
+    type Item: Scalar;
+
+    fn as_slice_mut(&'a mut self) -> &'a mut [Self::Item];
+}
+
+impl<'a, Item: Scalar, T: Pointer<Item=Item> + Dimensions> Slice<'a> for T {
+    type Item = Item;
+
+    fn as_slice(&'a self) -> &'a [Self::Item] {
+        let dim = self.dim();
+        unsafe { std::slice::from_raw_parts(self.as_ptr(), dim.0 * dim.1)}
+    }
+}
+
+impl<'a, Item: Scalar, T: PointerMut<Item=Item> + Dimensions> SliceMut<'a> for T {
+    type Item = Item;
+
+    fn as_slice_mut(&'a mut self) -> &'a mut [Self::Item] {
+        let dim = self.dim();
+        unsafe { std::slice::from_raw_parts_mut(self.as_mut_ptr(), dim.0 * dim.1)}
+    }
+}
+
 
 /// Mutable access to a raw pointer cointaing the data
 pub trait PointerMut {
@@ -240,7 +283,7 @@ where
     Layout: LayoutIdentifier,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
-    Mat: RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>,
+    Mat: RandomAccess<Item> + Dimensions + LayoutType<Layout> + SizeType<R = RS, C = CS>,
 {
 }
 
@@ -251,7 +294,7 @@ where
     Layout: LayoutIdentifier,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
-    Mat: RandomAccessMut<Item> + Dimensions + LayoutType<Layout> + SizeType<R=RS, C=CS>,
+    Mat: RandomAccessMut<Item> + Dimensions + LayoutType<Layout> + SizeType<R = RS, C = CS>,
 {
 }
 

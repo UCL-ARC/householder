@@ -2,9 +2,11 @@
 //!
 
 use crate::base_types::*;
+use crate::slice_matrix::*;
 //use crate::iterators::*;
 use crate::traits::*;
 use cauchy::Scalar;
+use ndarray::Slice;
 use std::marker::PhantomData;
 
 pub type MatrixFromRef<'a, Item, MatImpl, Layout, RS, CS> = Matrix<
@@ -79,6 +81,15 @@ where
         mat: &'a Matrix<'a, Item, MatImpl, Layout, RS, CS>,
     ) -> MatrixFromRef<'a, Item, MatImpl, Layout, RS, CS> {
         Matrix::new(MatrixRef::new(mat))
+    }
+
+    /// Create a new matrix from a given slice.
+    pub fn from_slice(
+        slice: &'a [Item],
+        rows: usize,
+        cols: usize,
+    ) -> Matrix<'a, Item, SliceMatrix<'a, Item, Layout, RS, CS>, Layout, RS, CS> {
+        Matrix::new(SliceMatrix::new(slice, rows, cols))
     }
 }
 
@@ -394,12 +405,52 @@ where
     }
 }
 
+impl<'a, Item: Scalar> CMatrixD<'a, Item> {
+    // The distance in memory between consecutive rows.
+    //
+    // If a matrix is of dimension (m, n) then for
+    // Fortran style ordering the result is 1 and for C style
+    // ordering the result is n.
+    pub fn row_stride(&self) -> usize {
+        self.dim().1
+    }
+
+    // The distance in memory between consecutive columns.
+    //
+    // If a matrix is of dimension (m, n) then for
+    // Fortran style ordering the result is m and for C style
+    // ordering the result is 1.
+    pub fn column_stride(&self) -> usize {
+        1
+    }
+}
+
+impl<'a, Item: Scalar> FMatrixD<'a, Item> {
+    // The distance in memory between consecutive rows.
+    //
+    // If a matrix is of dimension (m, n) then for
+    // Fortran style ordering the result is 1 and for C style
+    // ordering the result is n.
+    pub fn row_stride(&self) -> usize {
+        1
+    }
+
+    // The distance in memory between consecutive columns.
+    //
+    // If a matrix is of dimension (m, n) then for
+    // Fortran style ordering the result is m and for C style
+    // ordering the result is 1.
+    pub fn column_stride(&self) -> usize {
+        self.dim().0
+    }
+}
+
 #[cfg(test)]
 mod test {
 
     use super::*;
-    use crate::mat;
     use crate::col_vec;
+    use crate::mat;
 
     #[test]
     fn scalar_mult_matrix() {
@@ -426,6 +477,4 @@ mod test {
 
         assert_eq!(res.get1d(2), 13.0);
     }
-
-
 }
