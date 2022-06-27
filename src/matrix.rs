@@ -2,7 +2,6 @@
 //!
 
 use crate::base_types::*;
-use crate::slice_matrix::*;
 //use crate::iterators::*;
 use crate::traits::*;
 use cauchy::Scalar;
@@ -83,15 +82,17 @@ where
         Matrix::new(MatrixRef::new(mat))
     }
 
-    /// Create a new matrix from a given slice.
-    pub fn from_slice(
-        slice: &'a [Item],
-        rows: usize,
-        cols: usize,
-    ) -> Matrix<'a, Item, SliceMatrix<'a, Item, Layout, RS, CS>, Layout, RS, CS> {
-        Matrix::new(SliceMatrix::new(slice, rows, cols))
-    }
+    // /// Create a new matrix from a given slice.
+    // pub fn from_slice(
+    //     slice: &'a [Item],
+    //     rows: usize,
+    //     cols: usize,
+    // ) -> Matrix<'a, Item, SliceMatrix<'a, Item, Layout, RS, CS>, Layout, RS, CS> {
+    //     Matrix::new(SliceMatrix::new(slice, rows, cols))
+    // }
 }
+
+
 
 macro_rules! matrix_traits_impl {
     ($Layout:ty, $RS:ty, $CS:ty) => {
@@ -150,6 +151,18 @@ macro_rules! matrix_traits_impl {
                 self.0.as_mut_ptr()
             }
         }
+
+        impl<'a, Item: Scalar> Stride
+            for Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
+            {
+                fn row_stride(&self) -> usize {
+                    self.0.row_stride()
+                }
+
+                fn column_stride(&self) -> usize {
+                    self.0.column_stride()
+                }
+            }
 
         impl<'a, Item> SafeMutableRandomAccess
             for Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
@@ -379,6 +392,7 @@ where
 {
 }
 
+
 // Extra traits for vectors
 matrix_traits_impl!(VLayout, Dynamic, Fixed1);
 matrix_traits_impl!(VLayout, Fixed1, Dynamic);
@@ -405,45 +419,47 @@ where
     }
 }
 
-impl<'a, Item: Scalar> CMatrixD<'a, Item> {
-    // The distance in memory between consecutive rows.
-    //
-    // If a matrix is of dimension (m, n) then for
-    // Fortran style ordering the result is 1 and for C style
-    // ordering the result is n.
-    pub fn row_stride(&self) -> usize {
-        self.dim().1
-    }
 
-    // The distance in memory between consecutive columns.
-    //
-    // If a matrix is of dimension (m, n) then for
-    // Fortran style ordering the result is m and for C style
-    // ordering the result is 1.
-    pub fn column_stride(&self) -> usize {
-        1
-    }
-}
 
-impl<'a, Item: Scalar> FMatrixD<'a, Item> {
-    // The distance in memory between consecutive rows.
-    //
-    // If a matrix is of dimension (m, n) then for
-    // Fortran style ordering the result is 1 and for C style
-    // ordering the result is n.
-    pub fn row_stride(&self) -> usize {
-        1
-    }
+// impl<'a, Item: Scalar> CMatrixD<'a, Item> {
+//     // The distance in memory between consecutive rows.
+//     //
+//     // If a matrix is of dimension (m, n) then for
+//     // Fortran style ordering the result is 1 and for C style
+//     // ordering the result is n.
+//     pub fn row_stride(&self) -> usize {
+//         self.dim().1
+//     }
 
-    // The distance in memory between consecutive columns.
-    //
-    // If a matrix is of dimension (m, n) then for
-    // Fortran style ordering the result is m and for C style
-    // ordering the result is 1.
-    pub fn column_stride(&self) -> usize {
-        self.dim().0
-    }
-}
+//     // The distance in memory between consecutive columns.
+//     //
+//     // If a matrix is of dimension (m, n) then for
+//     // Fortran style ordering the result is m and for C style
+//     // ordering the result is 1.
+//     pub fn column_stride(&self) -> usize {
+//         1
+//     }
+// }
+
+// impl<'a, Item: Scalar> FMatrixD<'a, Item> {
+//     // The distance in memory between consecutive rows.
+//     //
+//     // If a matrix is of dimension (m, n) then for
+//     // Fortran style ordering the result is 1 and for C style
+//     // ordering the result is n.
+//     pub fn row_stride(&self) -> usize {
+//         1
+//     }
+
+//     // The distance in memory between consecutive columns.
+//     //
+//     // If a matrix is of dimension (m, n) then for
+//     // Fortran style ordering the result is m and for C style
+//     // ordering the result is 1.
+//     pub fn column_stride(&self) -> usize {
+//         self.dim().0
+//     }
+// }
 
 #[cfg(test)]
 mod test {
