@@ -3,6 +3,11 @@
 pub mod data_container;
 pub mod types;
 pub mod traits;
+pub mod base_matrix;
+pub mod base_matrix_mut;
+pub mod matrix;
+pub mod matrix_mut;
+pub mod matrix_impl;
 
 //pub mod traits;
 //pub mod slice_matrix;

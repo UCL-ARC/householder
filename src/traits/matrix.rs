@@ -1,10 +1,10 @@
 //! Matrix trait
 //!
-use crate::types::Scalar;
 use crate::traits::{
     Dimensions, LayoutIdentifier, LayoutType, RandomAccess, RandomAccessMut, SizeIdentifier,
     SizeType,
 };
+use crate::types::Scalar;
 
 /// Combined trait that summarizes basic matrix properties
 pub trait MatrixTrait<
@@ -17,12 +17,31 @@ pub trait MatrixTrait<
 }
 
 /// Combined trait for mutable matrices
-pub trait MatrixMutTrait<
+pub trait MatrixTraitMut<
     Item: Scalar,
     Layout: LayoutIdentifier,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
->:
-    RandomAccessMut<Item = Item> + MatrixTrait<Item, Layout, RS, CS>
+>: RandomAccessMut<Item = Item> + MatrixTrait<Item, Layout, RS, CS>
+{
+}
+
+impl<
+        Item: Scalar,
+        L: LayoutIdentifier,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+        Mat: RandomAccess<Item = Item> + Dimensions + LayoutType<L> + SizeType<R = RS, C = CS>,
+    > MatrixTrait<Item, L, RS, CS> for Mat
+{
+}
+
+impl<
+        Item: Scalar,
+        L: LayoutIdentifier,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+        Mat: MatrixTrait<Item, L, RS, CS> + RandomAccessMut<Item = Item>,
+    > MatrixTraitMut<Item, L, RS, CS> for Mat
 {
 }

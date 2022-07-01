@@ -1,13 +1,12 @@
-//! The main matrix class.
-//!
+//! The main mutable matrix class.
 
-use crate::base_matrix::BaseMatrix;
-use crate::data_container::DataContainer;
+use crate::base_matrix_mut::BaseMatrixMut;
+use crate::data_container::DataContainerMut;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 use std::marker::PhantomData;
 
-pub struct Matrix<Item, MatImpl, L, RS, CS>(
+pub struct MatrixMut<Item, MatImpl, L, RS, CS>(
     MatImpl,
     PhantomData<Item>,
     PhantomData<L>,
@@ -19,42 +18,42 @@ where
     L: LayoutIdentifier,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
-    MatImpl: MatrixTrait<Item, L, RS, CS>;
+    MatImpl: MatrixTraitMut<Item, L, RS, CS>;
 
 impl<
         Item: Scalar,
         L: LayoutIdentifier,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-        MatImpl: MatrixTrait<Item, L, RS, CS>,
-    > Matrix<Item, MatImpl, L, RS, CS>
+        MatImpl: MatrixTraitMut<Item, L, RS, CS>,
+    > MatrixMut<Item, MatImpl, L, RS, CS>
 {
     pub fn new(mat: MatImpl) -> Self {
         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 }
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, CLayout, RS, CS>, CLayout, RS, CS>
+impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+    MatrixMut<Item, BaseMatrixMut<Item, Data, CLayout, RS, CS>, CLayout, RS, CS>
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, CLayout, RS, CS>::new(data, dim))
+        Self::new(BaseMatrixMut::<Item, Data, CLayout, RS, CS>::new(data, dim))
     }
 }
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, FLayout, RS, CS>, FLayout, RS, CS>
+impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+    MatrixMut<Item, BaseMatrixMut<Item, Data, FLayout, RS, CS>, FLayout, RS, CS>
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, FLayout, RS, CS>::new(data, dim))
+        Self::new(BaseMatrixMut::<Item, Data, FLayout, RS, CS>::new(data, dim))
     }
 }
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, CustomLayout, RS, CS>, CustomLayout, RS, CS>
+impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+    MatrixMut<Item, BaseMatrixMut<Item, Data, CustomLayout, RS, CS>, CustomLayout, RS, CS>
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, CustomLayout, RS, CS>::new(data, dim, stride))
+        Self::new(BaseMatrixMut::<Item, Data, CustomLayout, RS, CS>::new(data, dim, stride))
     }
 }
 
