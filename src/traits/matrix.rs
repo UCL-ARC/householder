@@ -2,7 +2,7 @@
 //!
 use crate::traits::{
     Dimensions, LayoutIdentifier, LayoutType, RandomAccess, RandomAccessMut, SizeIdentifier,
-    SizeType,
+    SizeType, Stride,
 };
 use crate::types::Scalar;
 
@@ -12,7 +12,8 @@ pub trait MatrixTrait<
     Layout: LayoutIdentifier,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
->: RandomAccess<Item = Item> + Dimensions + LayoutType<Layout> + SizeType<R = RS, C = CS>
+>:
+    RandomAccess<Item = Item> + Dimensions + LayoutType<Layout> + SizeType<R = RS, C = CS> + Stride
 {
 }
 
@@ -31,7 +32,7 @@ impl<
         L: LayoutIdentifier,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-        Mat: RandomAccess<Item = Item> + Dimensions + LayoutType<L> + SizeType<R = RS, C = CS>,
+        Mat: RandomAccess<Item = Item> + Dimensions + LayoutType<L> + SizeType<R = RS, C = CS> + Stride,
     > MatrixTrait<Item, L, RS, CS> for Mat
 {
 }

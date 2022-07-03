@@ -2,10 +2,13 @@
 //!
 
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::DataContainer;
+use crate::base_matrix_mut::BaseMatrixMut;
+use crate::data_container::{DataContainer, DataContainerMut};
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 use std::marker::PhantomData;
+
+pub mod common_impl;
 
 pub struct Matrix<Item, MatImpl, L, RS, CS>(
     MatImpl,
@@ -55,6 +58,60 @@ impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<I
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
         Self::new(BaseMatrix::<Item, Data, CustomLayout, RS, CS>::new(data, dim, stride))
+    }
+}
+
+
+// ----------------
+
+pub struct MatrixMut<Item, MatImpl, L, RS, CS>(
+    MatImpl,
+    PhantomData<Item>,
+    PhantomData<L>,
+    PhantomData<RS>,
+    PhantomData<CS>,
+)
+where
+    Item: Scalar,
+    L: LayoutIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    MatImpl: MatrixTraitMut<Item, L, RS, CS>;
+
+impl<
+        Item: Scalar,
+        L: LayoutIdentifier,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+        MatImpl: MatrixTraitMut<Item, L, RS, CS>,
+    > MatrixMut<Item, MatImpl, L, RS, CS>
+{
+    pub fn new(mat: MatImpl) -> Self {
+        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
+    }
+}
+
+impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+    MatrixMut<Item, BaseMatrixMut<Item, Data, CLayout, RS, CS>, CLayout, RS, CS>
+{
+    pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
+        Self::new(BaseMatrixMut::<Item, Data, CLayout, RS, CS>::new(data, dim))
+    }
+}
+
+impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+    MatrixMut<Item, BaseMatrixMut<Item, Data, FLayout, RS, CS>, FLayout, RS, CS>
+{
+    pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
+        Self::new(BaseMatrixMut::<Item, Data, FLayout, RS, CS>::new(data, dim))
+    }
+}
+
+impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+    MatrixMut<Item, BaseMatrixMut<Item, Data, CustomLayout, RS, CS>, CustomLayout, RS, CS>
+{
+    pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
+        Self::new(BaseMatrixMut::<Item, Data, CustomLayout, RS, CS>::new(data, dim, stride))
     }
 }
 
