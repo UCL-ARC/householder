@@ -26,7 +26,7 @@ impl<
         CS: SizeIdentifier,
     > BaseMatrixMut<Item, Data, CLayout, RS, CS>
 {
-    /// New dynamic matrix with dimensions (rows, cols)
+
     pub fn new(data: Data, dim: (IndexType, IndexType)) -> Self {
         BaseMatrixMut::<Item, Data, CLayout, RS, CS> {
             data,
@@ -46,7 +46,6 @@ impl<
         CS: SizeIdentifier,
     > BaseMatrixMut<Item, Data, FLayout, RS, CS>
 {
-    /// New dynamic matrix with dimensions (rows, cols)
     pub fn new(data: Data, dim: (IndexType, IndexType)) -> Self {
         BaseMatrixMut::<Item, Data, FLayout, RS, CS> {
             data,
@@ -59,16 +58,74 @@ impl<
     }
 }
 
+macro_rules! fixed_vec_new {
+    ($RS:ident, $CS:ident) => {
+        impl<Item: Scalar, Data: DataContainerMut<Item = Item>>
+            BaseMatrixMut<Item, Data, VLayout, $RS, $CS>
+        {
+            pub fn new(data: Data) -> Self {
+                BaseMatrixMut::<Item, Data, VLayout, $RS, $CS> {
+                    data,
+                    dim: ($RS::N, $CS::N),
+                    stride: (1, 1),
+                    phantom_layout: PhantomData,
+                    phantom_r: PhantomData,
+                    phantom_c: PhantomData,
+                }
+            }
+        }
+    };
+}
+
+fixed_vec_new!(Fixed1, Fixed2);
+fixed_vec_new!(Fixed1, Fixed3);
+fixed_vec_new!(Fixed2, Fixed1);
+fixed_vec_new!(Fixed3, Fixed1);
+
+impl<Item: Scalar, Data: DataContainerMut<Item = Item>>
+    BaseMatrixMut<Item, Data, VLayout, Dynamic, Fixed1>
+{
+    pub fn new(data: Data) -> Self {
+        let nelems = data.number_of_elements();
+        BaseMatrixMut::<Item, Data, VLayout, Dynamic, Fixed1> {
+            data,
+            dim: (nelems, 1),
+            stride: (1, 1),
+            phantom_layout: PhantomData,
+            phantom_r: PhantomData,
+            phantom_c: PhantomData,
+        }
+    }
+}
+
+impl<Item: Scalar, Data: DataContainerMut<Item = Item>>
+    BaseMatrixMut<Item, Data, VLayout, Fixed1, Dynamic>
+{
+    pub fn new(data: Data) -> Self {
+        let nelems = data.number_of_elements();
+        BaseMatrixMut::<Item, Data, VLayout, Fixed1, Dynamic> {
+            data,
+            dim: (1, nelems),
+            stride: (1, 1),
+            phantom_layout: PhantomData,
+            phantom_r: PhantomData,
+            phantom_c: PhantomData,
+        }
+    }
+}
+
+
+
+
 impl<
         Item: Scalar,
         Data: DataContainerMut<Item = Item>,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-    > BaseMatrixMut<Item, Data, CustomLayout, RS, CS>
+    > BaseMatrixMut<Item, Data, StrideCLayout, RS, CS>
 {
-    /// New dynamic matrix with dimensions (rows, cols)
     pub fn new(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-        BaseMatrixMut::<Item, Data, CustomLayout, RS, CS> {
+        BaseMatrixMut::<Item, Data, StrideCLayout, RS, CS> {
             data,
             dim,
             stride,
@@ -144,20 +201,21 @@ impl<
 impl<
         Item: Scalar,
         Data: DataContainerMut<Item = Item>,
+        L: LayoutIdentifier,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-    > UnsafeRandomAccess for BaseMatrixMut<Item, Data, CLayout, RS, CS>
+    > UnsafeRandomAccess for BaseMatrixMut<Item, Data, L, RS, CS>
 {
     type Item = Item;
 
     #[inline]
     unsafe fn get_unchecked(&self, row: IndexType, col: IndexType) -> Self::Item {
-        self.data.get_unchecked(row * self.dim.1 + col)
+        self.data.get_unchecked(L::get_raw_index_from_2d_index(row, col, self.dim, self.stride))
     }
 
     #[inline]
     unsafe fn get1d_unchecked(&self, index: IndexType) -> Self::Item {
-        self.data.get_unchecked(index)    
+        self.data.get_unchecked(L::get_raw_index_from_1d_index(index, self.dim, self.stride))    
     }
 
 }
@@ -165,112 +223,21 @@ impl<
 impl<
         Item: Scalar,
         Data: DataContainerMut<Item = Item>,
+        L: LayoutIdentifier,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-    > UnsafeRandomAccess for BaseMatrixMut<Item, Data, FLayout, RS, CS>
-{
-    type Item = Item;
-
-    #[inline]
-    unsafe fn get_unchecked(&self, row: IndexType, col: IndexType) -> Self::Item {
-        self.data.get_unchecked(col * self.dim.0 + row)
-    }
-
-    #[inline]
-    unsafe fn get1d_unchecked(&self, index: IndexType) -> Self::Item {
-        self.data.get_unchecked(index)    
-    }
-
-}
-
-impl<
-        Item: Scalar,
-        Data: DataContainerMut<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > UnsafeRandomAccess for BaseMatrixMut<Item, Data, CustomLayout, RS, CS>
-{
-    type Item = Item;
-
-    #[inline]
-    unsafe fn get_unchecked(&self, row: IndexType, col: IndexType) -> Self::Item {
-        self.data.get_unchecked(self.stride.0 * row + self.stride.1 * col)
-    }
-
-    #[inline]
-    unsafe fn get1d_unchecked(&self, index: IndexType) -> Self::Item {
-        let row =   index / self.dim.1;
-        let col = index % self.dim.1;
-
-        self.get_unchecked(row, col)
-    }
-
-}
-
-// - Unsafe Mutable access
-
-impl<
-        Item: Scalar,
-        Data: DataContainerMut<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > UnsafeRandomAccessMut for BaseMatrixMut<Item, Data, CLayout, RS, CS>
+    > UnsafeRandomAccessMut for BaseMatrixMut<Item, Data, L, RS, CS>
 {
     type Item = Item;
 
     #[inline]
     unsafe fn get_unchecked_mut(&mut self, row: IndexType, col: IndexType) -> &mut Self::Item {
-        self.data.get_unchecked_mut(row * self.dim.1 + col)
+        self.data.get_unchecked_mut(L::get_raw_index_from_2d_index(row, col, self.dim, self.stride))
     }
 
     #[inline]
     unsafe fn get1d_unchecked_mut(&mut self, index: IndexType) -> &mut Self::Item {
-        self.data.get_unchecked_mut(index)    
-    }
-
-}
-
-impl<
-        Item: Scalar,
-        Data: DataContainerMut<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > UnsafeRandomAccessMut for BaseMatrixMut<Item, Data, FLayout, RS, CS>
-{
-    type Item = Item;
-
-    #[inline]
-    unsafe fn get_unchecked_mut(&mut self, row: IndexType, col: IndexType) -> &mut Self::Item {
-        self.data.get_unchecked_mut(col * self.dim.0 + row)
-    }
-
-    #[inline]
-    unsafe fn get1d_unchecked_mut(&mut self, index: IndexType) -> &mut Self::Item {
-        self.data.get_unchecked_mut(index)    
-    }
-
-}
-
-impl<
-        Item: Scalar,
-        Data: DataContainerMut<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > UnsafeRandomAccessMut for BaseMatrixMut<Item, Data, CustomLayout, RS, CS>
-{
-    type Item = Item;
-
-    #[inline]
-    unsafe fn get_unchecked_mut(&mut self, row: IndexType, col: IndexType) -> &mut Self::Item {
-        self.data.get_unchecked_mut(self.stride.0 * row + self.stride.1 * col)
-    }
-
-    #[inline]
-    unsafe fn get1d_unchecked_mut(&mut self, index: IndexType) -> &mut Self::Item {
-        let row =   index / self.dim.1;
-        let col = index % self.dim.1;
-
-        self.get_unchecked_mut(row, col)
+        self.data.get_unchecked_mut(L::get_raw_index_from_1d_index(index, self.dim, self.stride))    
     }
 
 }

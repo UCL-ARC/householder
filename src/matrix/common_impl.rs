@@ -96,8 +96,6 @@ macro_rules! eval_impl {
         impl<Item: Scalar, MatImpl: $MatTrait<Item, CLayout, $RS, $CS>>
             $MatrixType<Item, MatImpl, CLayout, $RS, $CS>
         {
-
-            
         }
     };
 }

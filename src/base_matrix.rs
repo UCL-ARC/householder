@@ -1,7 +1,7 @@
 //! The base matrix data types
+use crate::data_container::DataContainer;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
-use crate::data_container::DataContainer;
 use std::marker::PhantomData;
 
 pub struct BaseMatrix<
@@ -19,15 +19,17 @@ pub struct BaseMatrix<
     phantom_c: PhantomData<CS>,
 }
 
-impl<
-        Item: Scalar,
-        Data: DataContainer<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > BaseMatrix<Item, Data, CLayout, RS, CS>
+impl<Item: Scalar, Data: DataContainer<Item = Item>, RS: SizeIdentifier, CS: SizeIdentifier>
+    BaseMatrix<Item, Data, CLayout, RS, CS>
 {
-    /// New dynamic matrix with dimensions (rows, cols)
     pub fn new(data: Data, dim: (IndexType, IndexType)) -> Self {
+        assert!(
+            dim.0 * dim.1 == data.number_of_elements(),
+            "Number of elements in data: {}. But dimension is ({}, {})",
+            data.number_of_elements(),
+            dim.0,
+            dim.1
+        );
         BaseMatrix::<Item, Data, CLayout, RS, CS> {
             data,
             dim,
@@ -39,15 +41,18 @@ impl<
     }
 }
 
-impl<
-        Item: Scalar,
-        Data: DataContainer<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > BaseMatrix<Item, Data, FLayout, RS, CS>
+impl<Item: Scalar, Data: DataContainer<Item = Item>, RS: SizeIdentifier, CS: SizeIdentifier>
+    BaseMatrix<Item, Data, FLayout, RS, CS>
 {
-    /// New dynamic matrix with dimensions (rows, cols)
     pub fn new(data: Data, dim: (IndexType, IndexType)) -> Self {
+        assert!(
+            dim.0 * dim.1 == data.number_of_elements(),
+            "Number of elements in data: {}. But dimension is ({}, {})",
+            data.number_of_elements(),
+            dim.0,
+            dim.1
+        );
+
         BaseMatrix::<Item, Data, FLayout, RS, CS> {
             data,
             dim,
@@ -59,16 +64,12 @@ impl<
     }
 }
 
-impl<
-        Item: Scalar,
-        Data: DataContainer<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > BaseMatrix<Item, Data, CustomLayout, RS, CS>
+impl<Item: Scalar, Data: DataContainer<Item = Item>, RS: SizeIdentifier, CS: SizeIdentifier>
+    BaseMatrix<Item, Data, StrideCLayout, RS, CS>
 {
     /// New dynamic matrix with dimensions (rows, cols)
     pub fn new(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-        BaseMatrix::<Item, Data, CustomLayout, RS, CS> {
+        BaseMatrix::<Item, Data, StrideCLayout, RS, CS> {
             data,
             dim,
             stride,
@@ -79,7 +80,77 @@ impl<
     }
 }
 
+impl<Item: Scalar, Data: DataContainer<Item = Item>, RS: SizeIdentifier, CS: SizeIdentifier>
+    BaseMatrix<Item, Data, StrideFLayout, RS, CS>
+{
+    /// New dynamic matrix with dimensions (rows, cols)
+    pub fn new(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
+        BaseMatrix::<Item, Data, StrideFLayout, RS, CS> {
+            data,
+            dim,
+            stride,
+            phantom_layout: PhantomData,
+            phantom_r: PhantomData,
+            phantom_c: PhantomData,
+        }
+    }
+}
 
+macro_rules! fixed_vec_new {
+    ($RS:ident, $CS:ident) => {
+        impl<Item: Scalar, Data: DataContainer<Item = Item>>
+            BaseMatrix<Item, Data, VLayout, $RS, $CS>
+        {
+            pub fn new(data: Data) -> Self {
+                BaseMatrix::<Item, Data, VLayout, $RS, $CS> {
+                    data,
+                    dim: ($RS::N, $CS::N),
+                    stride: (1, 1),
+                    phantom_layout: PhantomData,
+                    phantom_r: PhantomData,
+                    phantom_c: PhantomData,
+                }
+            }
+        }
+    };
+}
+
+fixed_vec_new!(Fixed1, Fixed2);
+fixed_vec_new!(Fixed1, Fixed3);
+fixed_vec_new!(Fixed2, Fixed1);
+fixed_vec_new!(Fixed3, Fixed1);
+
+impl<Item: Scalar, Data: DataContainer<Item = Item>>
+    BaseMatrix<Item, Data, VLayout, Dynamic, Fixed1>
+{
+    pub fn new(data: Data) -> Self {
+        let nelems = data.number_of_elements();
+        BaseMatrix::<Item, Data, VLayout, Dynamic, Fixed1> {
+            data,
+            dim: (nelems, 1),
+            stride: (1, 1),
+            phantom_layout: PhantomData,
+            phantom_r: PhantomData,
+            phantom_c: PhantomData,
+        }
+    }
+}
+
+impl<Item: Scalar, Data: DataContainer<Item = Item>>
+    BaseMatrix<Item, Data, VLayout, Fixed1, Dynamic>
+{
+    pub fn new(data: Data) -> Self {
+        let nelems = data.number_of_elements();
+        BaseMatrix::<Item, Data, VLayout, Fixed1, Dynamic> {
+            data,
+            dim: (1, nelems),
+            stride: (1, 1),
+            phantom_layout: PhantomData,
+            phantom_r: PhantomData,
+            phantom_c: PhantomData,
+        }
+    }
+}
 
 impl<
         Item: Scalar,
@@ -144,72 +215,29 @@ impl<
 impl<
         Item: Scalar,
         Data: DataContainer<Item = Item>,
+        L: LayoutIdentifier,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-    > UnsafeRandomAccess for BaseMatrix<Item, Data, CLayout, RS, CS>
+    > UnsafeRandomAccess for BaseMatrix<Item, Data, L, RS, CS>
 {
     type Item = Item;
 
     #[inline]
     unsafe fn get_unchecked(&self, row: IndexType, col: IndexType) -> Self::Item {
-        self.data.get_unchecked(row * self.dim.1 + col)
+        self.data.get_unchecked(L::get_raw_index_from_2d_index(
+            row,
+            col,
+            self.dim,
+            self.stride,
+        ))
     }
 
     #[inline]
     unsafe fn get1d_unchecked(&self, index: IndexType) -> Self::Item {
-        self.data.get_unchecked(index)    
+        self.data
+            .get_unchecked(L::get_raw_index_from_1d_index(index, self.dim, self.stride))
     }
-
 }
-
-impl<
-        Item: Scalar,
-        Data: DataContainer<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > UnsafeRandomAccess for BaseMatrix<Item, Data, FLayout, RS, CS>
-{
-    type Item = Item;
-
-    #[inline]
-    unsafe fn get_unchecked(&self, row: IndexType, col: IndexType) -> Self::Item {
-        self.data.get_unchecked(col * self.dim.0 + row)
-    }
-
-    #[inline]
-    unsafe fn get1d_unchecked(&self, index: IndexType) -> Self::Item {
-        self.data.get_unchecked(index)    
-    }
-
-}
-
-impl<
-        Item: Scalar,
-        Data: DataContainer<Item = Item>,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > UnsafeRandomAccess for BaseMatrix<Item, Data, CustomLayout, RS, CS>
-{
-    type Item = Item;
-
-    #[inline]
-    unsafe fn get_unchecked(&self, row: IndexType, col: IndexType) -> Self::Item {
-        self.data.get_unchecked(self.stride.0 * row + self.stride.1 * col)
-    }
-
-    #[inline]
-    unsafe fn get1d_unchecked(&self, index: IndexType) -> Self::Item {
-        let row =   index / self.dim.1;
-        let col = index % self.dim.1;
-
-        self.get_unchecked(row, col)
-    }
-
-}
-
-
-
-
 
 // pub struct DynamicMatrix<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>
 // {

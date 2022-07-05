@@ -1,6 +1,11 @@
 //! The main matrix class.
 //!
 
+pub mod common_impl;
+pub mod vector_impl;
+pub mod constructors;
+
+
 use crate::base_matrix::BaseMatrix;
 use crate::base_matrix_mut::BaseMatrixMut;
 use crate::data_container::{DataContainer, DataContainerMut};
@@ -8,7 +13,9 @@ use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 use std::marker::PhantomData;
 
-pub mod common_impl;
+
+
+
 
 pub struct Matrix<Item, MatImpl, L, RS, CS>(
     MatImpl,
@@ -53,11 +60,13 @@ impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<I
     }
 }
 
+
+
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, CustomLayout, RS, CS>, CustomLayout, RS, CS>
+    Matrix<Item, BaseMatrix<Item, Data, StrideCLayout, RS, CS>, StrideCLayout, RS, CS>
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, CustomLayout, RS, CS>::new(data, dim, stride))
+        Self::new(BaseMatrix::<Item, Data, StrideCLayout, RS, CS>::new(data, dim, stride))
     }
 }
 
@@ -108,10 +117,10 @@ impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMu
 }
 
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
-    MatrixMut<Item, BaseMatrixMut<Item, Data, CustomLayout, RS, CS>, CustomLayout, RS, CS>
+    MatrixMut<Item, BaseMatrixMut<Item, Data, StrideCLayout, RS, CS>, StrideCLayout, RS, CS>
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrixMut::<Item, Data, CustomLayout, RS, CS>::new(data, dim, stride))
+        Self::new(BaseMatrixMut::<Item, Data, StrideCLayout, RS, CS>::new(data, dim, stride))
     }
 }
 
