@@ -1,5 +1,5 @@
 //! The base matrix data types
-use crate::data_container::DataContainer;
+use crate::data_container::{DataContainer, DataContainerMut};
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 use std::marker::PhantomData;
@@ -238,6 +238,37 @@ impl<
             .get_unchecked(L::get_raw_index_from_1d_index(index, self.dim, self.stride))
     }
 }
+
+impl<Item: Scalar, Data: DataContainer<Item = Item>, RS: SizeIdentifier, CS: SizeIdentifier>
+    BaseMatrix<Item, Data, VLayout, RS, CS>
+{
+    pub fn length(&self) -> IndexType {
+        self.data.number_of_elements()
+    }
+}
+
+impl<
+        Item: Scalar,
+        Data: DataContainerMut<Item = Item>,
+        L: LayoutIdentifier,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+    > UnsafeRandomAccessMut for BaseMatrix<Item, Data, L, RS, CS>
+{
+    type Item = Item;
+
+    #[inline]
+    unsafe fn get_unchecked_mut(&mut self, row: IndexType, col: IndexType) -> &mut Self::Item {
+        self.data.get_unchecked_mut(L::get_raw_index_from_2d_index(row, col, self.dim, self.stride))
+    }
+
+    #[inline]
+    unsafe fn get1d_unchecked_mut(&mut self, index: IndexType) -> &mut Self::Item {
+        self.data.get_unchecked_mut(L::get_raw_index_from_1d_index(index, self.dim, self.stride))    
+    }
+
+}
+
 
 // pub struct DynamicMatrix<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>
 // {

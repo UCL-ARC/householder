@@ -1,8 +1,8 @@
 //! A collection of routines to construct matrix objects from scratch or existing data.
 
-use crate::base_matrix_mut::BaseMatrixMut;
+use crate::base_matrix::BaseMatrix;
 use crate::data_container::{ArrayContainer, VectorContainer};
-use crate::matrix::{MatrixMut};
+use crate::matrix::Matrix;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 
@@ -11,9 +11,9 @@ use crate::types::{IndexType, Scalar};
 macro_rules! from_zeros_fixed {
     ($RS:ident, $CS:ident, $L:ident) => {
         impl<Item: Scalar>
-            MatrixMut<
+            Matrix<
                 Item,
-                BaseMatrixMut<Item, ArrayContainer<Item, { $RS::N * $CS::N }>, $L, $RS, $CS>,
+                BaseMatrix<Item, ArrayContainer<Item, { $RS::N * $CS::N }>, $L, $RS, $CS>,
                 $L,
                 $RS,
                 $CS,
@@ -44,9 +44,9 @@ from_zeros_fixed!(Fixed1, Fixed3, FLayout);
 macro_rules! from_zeros_dynamic_matrix {
     ($L:ident) => {
         impl<Item: Scalar>
-            MatrixMut<
+            Matrix<
                 Item,
-                BaseMatrixMut<Item, VectorContainer<Item>, $L, Dynamic, Dynamic>,
+                BaseMatrix<Item, VectorContainer<Item>, $L, Dynamic, Dynamic>,
                 $L,
                 Dynamic,
                 Dynamic,
@@ -61,6 +61,8 @@ macro_rules! from_zeros_dynamic_matrix {
 
 from_zeros_dynamic_matrix!(CLayout);
 from_zeros_dynamic_matrix!(FLayout);
+
+
 
 // macro_rules! from_zeros_dynamic_vector {
 //     ($RS:ident, $CS:ident) => {

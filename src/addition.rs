@@ -5,7 +5,7 @@ use crate::traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
-pub struct Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>(
+pub struct Addition<Item, Mat1, Mat2, Layout, RS, CS>(
     Mat1,
     Mat2,
     PhantomData<Item>,
@@ -19,8 +19,8 @@ where
     Layout: LayoutIdentifier,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
-    Mat1: MatrixTrait<'a, Item, Layout, RS, CS>,
-    Mat2: MatrixTrait<'a, Item, Layout, RS, CS>;
+    Mat1: MatrixTrait<Item, Layout, RS, CS>,
+    Mat2: MatrixTrait<Item, Layout, RS, CS>;
 
 impl<'a, Item, Mat1, Mat2, Layout, RS, CS> Addition<'a, Item, Mat1, Mat2, Layout, RS, CS>
 where

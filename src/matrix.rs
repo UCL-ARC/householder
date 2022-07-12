@@ -124,6 +124,22 @@ impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMu
     }
 }
 
+pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
+    &'a Matrix<Item, MatImpl, L, RS, CS>,
+    PhantomData<Item>,
+    PhantomData<L>,
+    PhantomData<RS>,
+    PhantomData<CS>,
+)
+where
+    Item: Scalar,
+    L: LayoutIdentifier,
+    RS: SizeIdentifier,
+    CS: SizeIdentifier,
+    MatImpl: MatrixTrait<Item, L, RS, CS>;
+
+
+
 
 // use crate::base_types::*;
 // //use crate::iterators::*;

@@ -115,8 +115,6 @@ impl<Item: Scalar, Data: DataContainerMut<Item = Item>>
 }
 
 
-
-
 impl<
         Item: Scalar,
         Data: DataContainerMut<Item = Item>,
@@ -242,7 +240,13 @@ impl<
 
 }
 
-
+impl<Item: Scalar, Data: DataContainerMut<Item = Item>, RS: SizeIdentifier, CS: SizeIdentifier>
+    BaseMatrixMut<Item, Data, VLayout, RS, CS>
+{
+    pub fn length(&self) -> IndexType {
+        self.data.number_of_elements()
+    }
+}
 
 
 // pub struct DynamicMatrix<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>
