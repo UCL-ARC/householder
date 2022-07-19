@@ -96,6 +96,45 @@ impl<Item: Scalar, Data: DataContainer<Item = Item>, RS: SizeIdentifier, CS: Siz
     }
 }
 
+impl<
+        Item: Scalar,
+        Data: DataContainer<Item = Item>,
+        L: LayoutIdentifier,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+    > BaseMatrix<Item, Data, L, RS, CS>
+{
+    #[inline]
+    pub fn get_pointer(&self) -> *const Item {
+        self.data.get_pointer()
+    }
+
+    #[inline]
+    pub fn get_slice(&self, first: IndexType, last: IndexType) -> &[Item] {
+        self.data.get_slice(first, last)
+    }
+}
+
+impl<
+        Item: Scalar,
+        Data: DataContainerMut<Item = Item>,
+        L: LayoutIdentifier,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+    > BaseMatrix<Item, Data, L, RS, CS>
+{
+    #[inline]
+    pub fn get_pointer_mut(&mut self) -> *mut Item {
+        self.data.get_pointer_mut()
+    }
+
+    #[inline]
+    pub fn get_slice_mut(&mut self, first: IndexType, last: IndexType) -> &mut [Item] {
+        self.data.get_slice_mut(first, last)
+    }
+}
+
+
 macro_rules! fixed_vec_new {
     ($RS:ident, $CS:ident) => {
         impl<Item: Scalar, Data: DataContainer<Item = Item>>
@@ -259,16 +298,20 @@ impl<
 
     #[inline]
     unsafe fn get_unchecked_mut(&mut self, row: IndexType, col: IndexType) -> &mut Self::Item {
-        self.data.get_unchecked_mut(L::get_raw_index_from_2d_index(row, col, self.dim, self.stride))
+        self.data.get_unchecked_mut(L::get_raw_index_from_2d_index(
+            row,
+            col,
+            self.dim,
+            self.stride,
+        ))
     }
 
     #[inline]
     unsafe fn get1d_unchecked_mut(&mut self, index: IndexType) -> &mut Self::Item {
-        self.data.get_unchecked_mut(L::get_raw_index_from_1d_index(index, self.dim, self.stride))    
+        self.data
+            .get_unchecked_mut(L::get_raw_index_from_1d_index(index, self.dim, self.stride))
     }
-
 }
-
 
 // pub struct DynamicMatrix<Item: Scalar, L: LayoutIdentifier, RS: SizeIdentifier, CS: SizeIdentifier>
 // {

@@ -4,9 +4,10 @@
 pub mod common_impl;
 pub mod constructors;
 pub mod vector_impl;
+pub mod matrix_slices;
 
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::{DataContainer, VectorContainer};
+use crate::data_container::{ArrayContainer, DataContainer, VectorContainer};
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
@@ -17,6 +18,18 @@ pub type RefMat<'a, Item, MatImpl, L, RS, CS> =
 
 pub type MatrixD<Item, L> =
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>;
+
+pub type Matrix22<Item, L> =
+    Matrix<Item, BaseMatrix<Item, ArrayContainer<Item, 4>, L, Fixed2, Fixed2>, L, Fixed2, Fixed2>;
+
+pub type Matrix33<Item, L> =
+    Matrix<Item, BaseMatrix<Item, ArrayContainer<Item, 9>, L, Fixed3, Fixed3>, L, Fixed3, Fixed3>;
+
+pub type Matrix32<Item, L> =
+    Matrix<Item, BaseMatrix<Item, ArrayContainer<Item, 6>, L, Fixed3, Fixed2>, L, Fixed3, Fixed2>;
+
+pub type Matrix23<Item, L> =
+    Matrix<Item, BaseMatrix<Item, ArrayContainer<Item, 6>, L, Fixed2, Fixed3>, L, Fixed2, Fixed3>;
 
 pub struct Matrix<Item, MatImpl, L, RS, CS>(
     MatImpl,
@@ -76,6 +89,20 @@ impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<I
         stride: (IndexType, IndexType),
     ) -> Self {
         Self::new(BaseMatrix::<Item, Data, StrideCLayout, RS, CS>::new(
+            data, dim, stride,
+        ))
+    }
+}
+
+impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
+    Matrix<Item, BaseMatrix<Item, Data, StrideFLayout, RS, CS>, StrideFLayout, RS, CS>
+{
+    pub fn from_data(
+        data: Data,
+        dim: (IndexType, IndexType),
+        stride: (IndexType, IndexType),
+    ) -> Self {
+        Self::new(BaseMatrix::<Item, Data, StrideFLayout, RS, CS>::new(
             data, dim, stride,
         ))
     }

@@ -12,6 +12,27 @@ pub trait DataContainer {
     /// Get pointer to data.
     fn get_pointer(&self) -> *const Self::Item;
 
+    /// Get data slice
+    fn get_slice(&self, first: IndexType, last: IndexType) -> &[Self::Item] {
+        assert!(
+            first < last,
+            "'first' {} must be smaller than 'last' {}.",
+            first,
+            last
+        );
+
+        assert!(
+            last <= self.number_of_elements(),
+            "Value of 'last' {} must be smaller or equal to the number of elements {}.",
+            last,
+            self.number_of_elements()
+        );
+
+        unsafe {
+            std::slice::from_raw_parts(self.get_pointer().offset(first as isize), last - first)
+        }
+    }
+
     /// Return the number of elements in the container.
     fn number_of_elements(&self) -> IndexType;
 }
@@ -22,6 +43,38 @@ pub trait DataContainerMut: DataContainer {
 
     /// Get mutable pointer to data.
     fn get_pointer_mut(&mut self) -> *mut Self::Item;
+
+    /// Get data slice
+    fn get_slice_mut(&mut self, first: IndexType, last: IndexType) -> &mut [Self::Item] {
+        assert!(
+            first < last,
+            "'first' {} must be smaller than 'last' {}.",
+            first,
+            last
+        );
+
+        assert!(
+            first < self.number_of_elements(),
+            "Value of 'first' {} must be smaller than number of elements {}.",
+            first,
+            self.number_of_elements()
+        );
+
+
+        assert!(
+            last <= self.number_of_elements(),
+            "Value of 'last' {} must be smaller or equal to the number of elements {}.",
+            last,
+            self.number_of_elements()
+        );
+
+        unsafe {
+            std::slice::from_raw_parts_mut(
+                self.get_pointer_mut().offset(first as isize),
+                last - first,
+            )
+        }
+    }
 }
 
 /// A container that uses dynamic vectors.
@@ -30,7 +83,7 @@ pub struct VectorContainer<Item: Scalar> {
 }
 
 pub struct ArrayContainer<Item: Scalar, const N: usize> {
-    data: [Item;N]
+    data: [Item; N],
 }
 
 /// A container that takes a reference to a slice.
@@ -45,7 +98,7 @@ pub struct SliceContainerMut<'a, Item: Scalar> {
 
 impl<Item: Scalar> VectorContainer<Item> {
     /// New vector container by specifying the number of elements.
-    /// 
+    ///
     /// The container is initialized with zeros by default.
     pub fn new(nelems: IndexType) -> VectorContainer<Item> {
         VectorContainer::<Item> {
@@ -57,7 +110,7 @@ impl<Item: Scalar> VectorContainer<Item> {
 impl<Item: Scalar, const N: usize> ArrayContainer<Item, N> {
     pub fn new() -> ArrayContainer<Item, N> {
         ArrayContainer::<Item, N> {
-            data: [num::cast::<f64, Item>(0.0).unwrap(); N]
+            data: [num::cast::<f64, Item>(0.0).unwrap(); N],
         }
     }
 }
@@ -127,7 +180,6 @@ impl<Item: Scalar, const N: usize> DataContainerMut for ArrayContainer<Item, N> 
         self.data.as_mut_ptr()
     }
 }
-
 
 impl<'a, Item: Scalar> DataContainer for SliceContainer<'a, Item> {
     type Item = Item;

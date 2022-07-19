@@ -192,3 +192,22 @@ scalar_mult_impl!(f32);
 scalar_mult_impl!(f64);
 scalar_mult_impl!(c32);
 scalar_mult_impl!(c64);
+
+#[cfg(test)]
+
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn scalar_mult() {
+        let mut mat = MatrixD::<f64, CLayout>::from_zeros(2, 3);
+
+        *mat.get_mut(1, 2) = 5.0;
+
+        let res = 2.0 * mat;
+        let res = res.eval();
+
+        assert_eq!(res.get(1, 2), 10.0);
+    }
+}

@@ -35,11 +35,20 @@ from_zeros_fixed!(Fixed1, Fixed2, CLayout);
 from_zeros_fixed!(Fixed3, Fixed3, CLayout);
 from_zeros_fixed!(Fixed1, Fixed3, CLayout);
 
+from_zeros_fixed!(Fixed2, Fixed3, CLayout);
+from_zeros_fixed!(Fixed3, Fixed2, CLayout);
+
+
 from_zeros_fixed!(Fixed2, Fixed2, FLayout);
 from_zeros_fixed!(Fixed1, Fixed2, FLayout);
 
 from_zeros_fixed!(Fixed3, Fixed3, FLayout);
 from_zeros_fixed!(Fixed1, Fixed3, FLayout);
+
+from_zeros_fixed!(Fixed2, Fixed3, FLayout);
+from_zeros_fixed!(Fixed3, Fixed2, FLayout);
+
+
 
 macro_rules! from_zeros_dynamic_matrix {
     ($L:ident) => {
