@@ -2,20 +2,21 @@
 //!
 
 pub mod common_impl;
-pub mod vector_impl;
 pub mod constructors;
-
+pub mod vector_impl;
 
 use crate::base_matrix::BaseMatrix;
-use crate::base_matrix_mut::BaseMatrixMut;
-use crate::data_container::{DataContainer, DataContainerMut};
+use crate::data_container::{DataContainer, VectorContainer};
+use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 use std::marker::PhantomData;
 
+pub type RefMat<'a, Item, MatImpl, L, RS, CS> =
+    Matrix<Item, MatrixRef<'a, Item, MatImpl, L, RS, CS>, L, RS, CS>;
 
-
-
+pub type MatrixD<Item, L> =
+    Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>;
 
 pub struct Matrix<Item, MatImpl, L, RS, CS>(
     MatImpl,
@@ -42,6 +43,12 @@ impl<
     pub fn new(mat: MatImpl) -> Self {
         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
+
+    pub fn from_ref<'a>(
+        mat: &'a Matrix<Item, MatImpl, L, RS, CS>,
+    ) -> RefMat<'a, Item, MatImpl, L, RS, CS> {
+        RefMat::new(MatrixRef::new(mat))
+    }
 }
 
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
@@ -60,86 +67,86 @@ impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<I
     }
 }
 
-
-
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
     Matrix<Item, BaseMatrix<Item, Data, StrideCLayout, RS, CS>, StrideCLayout, RS, CS>
 {
-    pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, StrideCLayout, RS, CS>::new(data, dim, stride))
+    pub fn from_data(
+        data: Data,
+        dim: (IndexType, IndexType),
+        stride: (IndexType, IndexType),
+    ) -> Self {
+        Self::new(BaseMatrix::<Item, Data, StrideCLayout, RS, CS>::new(
+            data, dim, stride,
+        ))
     }
 }
-
 
 // ----------------
 
-pub struct MatrixMut<Item, MatImpl, L, RS, CS>(
-    MatImpl,
-    PhantomData<Item>,
-    PhantomData<L>,
-    PhantomData<RS>,
-    PhantomData<CS>,
-)
-where
-    Item: Scalar,
-    L: LayoutIdentifier,
-    RS: SizeIdentifier,
-    CS: SizeIdentifier,
-    MatImpl: MatrixTraitMut<Item, L, RS, CS>;
+// pub struct MatrixMut<Item, MatImpl, L, RS, CS>(
+//     MatImpl,
+//     PhantomData<Item>,
+//     PhantomData<L>,
+//     PhantomData<RS>,
+//     PhantomData<CS>,
+// )
+// where
+//     Item: Scalar,
+//     L: LayoutIdentifier,
+//     RS: SizeIdentifier,
+//     CS: SizeIdentifier,
+//     MatImpl: MatrixTraitMut<Item, L, RS, CS>;
 
-impl<
-        Item: Scalar,
-        L: LayoutIdentifier,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-        MatImpl: MatrixTraitMut<Item, L, RS, CS>,
-    > MatrixMut<Item, MatImpl, L, RS, CS>
-{
-    pub fn new(mat: MatImpl) -> Self {
-        Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
-    }
-}
+// impl<
+//         Item: Scalar,
+//         L: LayoutIdentifier,
+//         RS: SizeIdentifier,
+//         CS: SizeIdentifier,
+//         MatImpl: MatrixTraitMut<Item, L, RS, CS>,
+//     > MatrixMut<Item, MatImpl, L, RS, CS>
+// {
+//     pub fn new(mat: MatImpl) -> Self {
+//         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
+//     }
+// }
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
-    MatrixMut<Item, BaseMatrixMut<Item, Data, CLayout, RS, CS>, CLayout, RS, CS>
-{
-    pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrixMut::<Item, Data, CLayout, RS, CS>::new(data, dim))
-    }
-}
+// impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+//     MatrixMut<Item, BaseMatrixMut<Item, Data, CLayout, RS, CS>, CLayout, RS, CS>
+// {
+//     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
+//         Self::new(BaseMatrixMut::<Item, Data, CLayout, RS, CS>::new(data, dim))
+//     }
+// }
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
-    MatrixMut<Item, BaseMatrixMut<Item, Data, FLayout, RS, CS>, FLayout, RS, CS>
-{
-    pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrixMut::<Item, Data, FLayout, RS, CS>::new(data, dim))
-    }
-}
+// impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+//     MatrixMut<Item, BaseMatrixMut<Item, Data, FLayout, RS, CS>, FLayout, RS, CS>
+// {
+//     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
+//         Self::new(BaseMatrixMut::<Item, Data, FLayout, RS, CS>::new(data, dim))
+//     }
+// }
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
-    MatrixMut<Item, BaseMatrixMut<Item, Data, StrideCLayout, RS, CS>, StrideCLayout, RS, CS>
-{
-    pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrixMut::<Item, Data, StrideCLayout, RS, CS>::new(data, dim, stride))
-    }
-}
+// impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
+//     MatrixMut<Item, BaseMatrixMut<Item, Data, StrideCLayout, RS, CS>, StrideCLayout, RS, CS>
+// {
+//     pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
+//         Self::new(BaseMatrixMut::<Item, Data, StrideCLayout, RS, CS>::new(data, dim, stride))
+//     }
+// }
 
-pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
-    &'a Matrix<Item, MatImpl, L, RS, CS>,
-    PhantomData<Item>,
-    PhantomData<L>,
-    PhantomData<RS>,
-    PhantomData<CS>,
-)
-where
-    Item: Scalar,
-    L: LayoutIdentifier,
-    RS: SizeIdentifier,
-    CS: SizeIdentifier,
-    MatImpl: MatrixTrait<Item, L, RS, CS>;
-
-
-
+// pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
+//     &'a Matrix<Item, MatImpl, L, RS, CS>,
+//     PhantomData<Item>,
+//     PhantomData<L>,
+//     PhantomData<RS>,
+//     PhantomData<CS>,
+// )
+// where
+//     Item: Scalar,
+//     L: LayoutIdentifier,
+//     RS: SizeIdentifier,
+//     CS: SizeIdentifier,
+//     MatImpl: MatrixTrait<Item, L, RS, CS>;
 
 // use crate::base_types::*;
 // //use crate::iterators::*;

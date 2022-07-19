@@ -1,6 +1,8 @@
 //! Implementation of matrix traits and methods
 
-use crate::matrix::{Matrix, MatrixMut};
+use crate::base_matrix::BaseMatrix;
+use crate::data_container::{ArrayContainer, VectorContainer};
+use crate::matrix::{Matrix, MatrixD};
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 
@@ -106,7 +108,27 @@ impl<
     }
 }
 
+macro_rules! eval_dynamic_matrix {
+    ($L:ident) => {
+        impl<Item: Scalar, MatImpl: MatrixTrait<Item, $L, Dynamic, Dynamic>>
+            Matrix<Item, MatImpl, $L, Dynamic, Dynamic>
+        {
+            pub fn eval(&self) -> MatrixD<Item, $L> {
+                let dim = self.dim();
+                let mut result = MatrixD::<Item, $L>::from_zeros(dim.0, dim.1);
+                for index in 0..self.number_of_elements() {
+                    unsafe { *result.get1d_unchecked_mut(index) = self.get1d_unchecked(index) };
+                }
+                result
+            }
+        }
+    };
+}
 
+eval_dynamic_matrix!(CLayout);
+eval_dynamic_matrix!(FLayout);
+
+// Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>
 
 // // Common implementantions for mutable and non-mutable matrices
 // macro_rules! common_impl {
