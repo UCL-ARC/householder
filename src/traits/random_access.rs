@@ -1,7 +1,7 @@
 //! Traits for random access of matrices
 
 use crate::types::{IndexType, Scalar};
-use crate::traits::Dimensions;
+use crate::traits::{Layout, LayoutType};
 
 /// Random access without bounds check for matrices.
 pub trait UnsafeRandomAccess {
@@ -20,7 +20,7 @@ pub trait UnsafeRandomAccessMut {
 }
 
 /// Bounds checked random access for matrices.
-pub trait RandomAccess: UnsafeRandomAccess + Dimensions {
+pub trait RandomAccess: UnsafeRandomAccess + Layout {
     /// Get the element at position (row, col) of the matrix.
     fn get(&self, row: usize, col: usize) -> Self::Item;
 
@@ -29,7 +29,7 @@ pub trait RandomAccess: UnsafeRandomAccess + Dimensions {
 }
 
 /// Bounds checked mutable random access for matrices.
-pub trait RandomAccessMut: UnsafeRandomAccessMut + Dimensions {
+pub trait RandomAccessMut: UnsafeRandomAccessMut + Layout {
     /// Get mutable reference to element at position (row, col) of the matrix.
     fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Item;
     /// Get mutable reference from matrix linearized as 1d array (result depends on memory layout).
@@ -65,26 +65,26 @@ fn assert_dimension1d(elem: IndexType, nelems: IndexType) {
     );
 }
 
-impl<Item: Scalar, Mat: UnsafeRandomAccess<Item=Item> + Dimensions> RandomAccess for Mat {
+impl<Item: Scalar, Mat: UnsafeRandomAccess<Item=Item> + Layout> RandomAccess for Mat {
     fn get(&self, row: IndexType, col: IndexType)  -> Self::Item {
-        assert_dimension(row, col, self.dim());
+        assert_dimension(row, col, self.layout().dim());
         unsafe {self.get_unchecked(row, col) }
     }
 
     fn get1d(&self, elem: IndexType) -> Self::Item {
-        assert_dimension1d(elem, self.number_of_elements());
+        assert_dimension1d(elem, self.layout().number_of_elements());
         unsafe {self.get1d_unchecked(elem)}
     }
 }
 
-impl<Item: Scalar, Mat: UnsafeRandomAccessMut<Item=Item> + Dimensions> RandomAccessMut for Mat {
+impl<Item: Scalar, Mat: UnsafeRandomAccessMut<Item=Item> + Layout> RandomAccessMut for Mat {
     fn get_mut(&mut self, row: IndexType, col: IndexType)  -> &mut Self::Item {
-        assert_dimension(row, col, self.dim());
+        assert_dimension(row, col, self.layout().dim());
         unsafe {self.get_unchecked_mut(row, col) }
     }
 
     fn get1d_mut(&mut self, elem: IndexType) -> &mut Self::Item {
-        assert_dimension1d(elem, self.number_of_elements());
+        assert_dimension1d(elem, self.layout().number_of_elements());
         unsafe {self.get1d_unchecked_mut(elem)}
     }
 }

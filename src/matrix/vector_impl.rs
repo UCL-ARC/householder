@@ -5,15 +5,16 @@ use crate::base_matrix::BaseMatrix;
 use crate::matrix::Matrix;
 use crate::data_container::{ArrayContainer, VectorContainer, DataContainer};
 use crate::traits::*;
+use crate::layouts::*;
 use crate::types::{IndexType, Scalar};
 
 macro_rules! vec_dynamic {
-    ($MatrixType:ident, $BaseType:ident, $RS:ident, $CS:ident) => {
+    ($MatrixType:ident, $BaseType:ident, $Layout:ident, $RS:ident, $CS:ident) => {
         impl<Item: Scalar>
             $MatrixType<
                 Item,
-                $BaseType<Item, VectorContainer<Item>, VLayout, $RS, $CS>,
-                VLayout,
+                $BaseType<Item, VectorContainer<Item>, $Layout, $RS, $CS>,
+                $Layout,
                 $RS,
                 $CS,
             >
@@ -22,7 +23,7 @@ macro_rules! vec_dynamic {
                 Self::new($BaseType::<
                     Item,
                     VectorContainer<Item>,
-                    VLayout,
+                    $Layout,
                     $RS,
                     $CS,
                 >::new(data))
@@ -36,12 +37,12 @@ macro_rules! vec_dynamic {
 }
 
 macro_rules! vec_fixed {
-    ($MatrixType:ident, $BaseType:ident, $RS:ident, $CS:ident, $N:expr) => {
+    ($MatrixType:ident, $BaseType:ident, $Layout:ident, $RS:ident, $CS:ident, $N:expr) => {
         impl<Item: Scalar>
             $MatrixType<
                 Item,
-                $BaseType<Item, ArrayContainer<Item, $N>, VLayout, $RS, $CS>,
-                VLayout,
+                $BaseType<Item, ArrayContainer<Item, $N>, $Layout, $RS, $CS>,
+                $Layout,
                 $RS,
                 $CS,
             >
@@ -50,7 +51,7 @@ macro_rules! vec_fixed {
                 Self::new($BaseType::<
                     Item,
                     ArrayContainer<Item, $N>,
-                    VLayout,
+                    $Layout,
                     $RS,
                     $CS,
                 >::new(data))
@@ -63,14 +64,14 @@ macro_rules! vec_fixed {
     };
 }
 
-vec_dynamic!(Matrix, BaseMatrix, Dynamic, Fixed1);
-vec_dynamic!(Matrix, BaseMatrix, Fixed1, Dynamic);
+vec_dynamic!(Matrix, BaseMatrix, RowMajor, Dynamic, Fixed1);
+vec_dynamic!(Matrix, BaseMatrix, RowMajor, Fixed1, Dynamic);
 
 
-vec_fixed!(Matrix, BaseMatrix, Fixed2, Fixed1, 2);
-vec_fixed!(Matrix, BaseMatrix, Fixed3, Fixed1, 2);
-vec_fixed!(Matrix, BaseMatrix, Fixed1, Fixed2, 2);
-vec_fixed!(Matrix, BaseMatrix, Fixed1, Fixed3, 2);
+vec_fixed!(Matrix, BaseMatrix, RowMajor, Fixed2, Fixed1, 2);
+vec_fixed!(Matrix, BaseMatrix, RowMajor, Fixed3, Fixed1, 2);
+vec_fixed!(Matrix, BaseMatrix, RowMajor, Fixed1, Fixed2, 2);
+vec_fixed!(Matrix, BaseMatrix, RowMajor, Fixed1, Fixed3, 2);
 
 
 impl<Item: Scalar, Data: DataContainer<Item=Item>, RS: SizeIdentifier, CS: SizeIdentifier>

@@ -3,13 +3,14 @@
 
 pub mod common_impl;
 pub mod constructors;
-pub mod vector_impl;
+//pub mod vector_impl;
 pub mod matrix_slices;
 
 use crate::base_matrix::BaseMatrix;
 use crate::data_container::{ArrayContainer, DataContainer, VectorContainer};
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
+use crate::layouts::*;
 use crate::types::{IndexType, Scalar};
 use std::marker::PhantomData;
 
@@ -40,14 +41,14 @@ pub struct Matrix<Item, MatImpl, L, RS, CS>(
 )
 where
     Item: Scalar,
-    L: LayoutIdentifier,
+    L: LayoutType,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
     MatImpl: MatrixTrait<Item, L, RS, CS>;
 
 impl<
         Item: Scalar,
-        L: LayoutIdentifier,
+        L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
@@ -65,570 +66,50 @@ impl<
 }
 
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, CLayout, RS, CS>, CLayout, RS, CS>
+    Matrix<Item, BaseMatrix<Item, Data, RowMajor, RS, CS>, RowMajor, RS, CS>
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, CLayout, RS, CS>::new(data, dim))
+
+        Self::new(BaseMatrix::<Item, Data, RowMajor, RS, CS>::new(data, RowMajor::new(dim)))
     }
 }
 
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, FLayout, RS, CS>, FLayout, RS, CS>
+    Matrix<Item, BaseMatrix<Item, Data, ColumnMajor, RS, CS>, ColumnMajor, RS, CS>
 {
     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, FLayout, RS, CS>::new(data, dim))
+        Self::new(BaseMatrix::<Item, Data, ColumnMajor, RS, CS>::new(data, ColumnMajor::new(dim)))
     }
 }
 
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, StrideCLayout, RS, CS>, StrideCLayout, RS, CS>
+    Matrix<Item, BaseMatrix<Item, Data, ArbitraryStrideRowMajor, RS, CS>, ArbitraryStrideRowMajor, RS, CS>
 {
     pub fn from_data(
         data: Data,
         dim: (IndexType, IndexType),
         stride: (IndexType, IndexType),
     ) -> Self {
-        Self::new(BaseMatrix::<Item, Data, StrideCLayout, RS, CS>::new(
-            data, dim, stride,
+        Self::new(BaseMatrix::<Item, Data, ArbitraryStrideRowMajor, RS, CS>::new(
+            data, ArbitraryStrideRowMajor::new(dim, stride),
         ))
     }
 }
 
 impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, StrideFLayout, RS, CS>, StrideFLayout, RS, CS>
+    Matrix<Item, BaseMatrix<Item, Data, ArbitraryStrideColumnMajor, RS, CS>, ArbitraryStrideColumnMajor, RS, CS>
 {
     pub fn from_data(
         data: Data,
         dim: (IndexType, IndexType),
         stride: (IndexType, IndexType),
     ) -> Self {
-        Self::new(BaseMatrix::<Item, Data, StrideFLayout, RS, CS>::new(
-            data, dim, stride,
+        Self::new(BaseMatrix::<Item, Data, ArbitraryStrideColumnMajor, RS, CS>::new(
+            data, ArbitraryStrideColumnMajor::new(dim, stride),
         ))
     }
 }
 
-// ----------------
-
-// pub struct MatrixMut<Item, MatImpl, L, RS, CS>(
-//     MatImpl,
-//     PhantomData<Item>,
-//     PhantomData<L>,
-//     PhantomData<RS>,
-//     PhantomData<CS>,
-// )
-// where
-//     Item: Scalar,
-//     L: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-//     MatImpl: MatrixTraitMut<Item, L, RS, CS>;
-
-// impl<
-//         Item: Scalar,
-//         L: LayoutIdentifier,
-//         RS: SizeIdentifier,
-//         CS: SizeIdentifier,
-//         MatImpl: MatrixTraitMut<Item, L, RS, CS>,
-//     > MatrixMut<Item, MatImpl, L, RS, CS>
-// {
-//     pub fn new(mat: MatImpl) -> Self {
-//         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
-//     }
-// }
-
-// impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
-//     MatrixMut<Item, BaseMatrixMut<Item, Data, CLayout, RS, CS>, CLayout, RS, CS>
-// {
-//     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-//         Self::new(BaseMatrixMut::<Item, Data, CLayout, RS, CS>::new(data, dim))
-//     }
-// }
-
-// impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
-//     MatrixMut<Item, BaseMatrixMut<Item, Data, FLayout, RS, CS>, FLayout, RS, CS>
-// {
-//     pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-//         Self::new(BaseMatrixMut::<Item, Data, FLayout, RS, CS>::new(data, dim))
-//     }
-// }
-
-// impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainerMut<Item = Item>>
-//     MatrixMut<Item, BaseMatrixMut<Item, Data, StrideCLayout, RS, CS>, StrideCLayout, RS, CS>
-// {
-//     pub fn from_data(data: Data, dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
-//         Self::new(BaseMatrixMut::<Item, Data, StrideCLayout, RS, CS>::new(data, dim, stride))
-//     }
-// }
-
-// pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
-//     &'a Matrix<Item, MatImpl, L, RS, CS>,
-//     PhantomData<Item>,
-//     PhantomData<L>,
-//     PhantomData<RS>,
-//     PhantomData<CS>,
-// )
-// where
-//     Item: Scalar,
-//     L: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-//     MatImpl: MatrixTrait<Item, L, RS, CS>;
-
-// use crate::base_types::*;
-// //use crate::iterators::*;
-// use crate::traits::*;
-// use cauchy::Scalar;
-// use ndarray::Slice;
-// use std::marker::PhantomData;
-
-// pub type MatrixFromRef<'a, Item, MatImpl, Layout, RS, CS> = Matrix<
-//     'a,
-//     Item,
-//     MatrixRef<'a, Item, Matrix<'a, Item, MatImpl, Layout, RS, CS>, Layout, RS, CS>,
-//     Layout,
-//     RS,
-//     CS,
-// >;
-
-// pub type ColVectorD<'a, Item> =
-//     Matrix<'a, Item, DynamicMatrix<Item, VLayout, Dynamic, Fixed1>, VLayout, Dynamic, Fixed1>;
-// pub type RowVectorD<'a, Item> =
-//     Matrix<'a, Item, DynamicMatrix<Item, VLayout, Fixed1, Dynamic>, VLayout, Fixed1, Dynamic>;
-// pub type CMatrixD<'a, Item> =
-//     Matrix<'a, Item, DynamicMatrix<Item, CLayout, Dynamic, Dynamic>, CLayout, Dynamic, Dynamic>;
-// pub type FMatrixD<'a, Item> =
-//     Matrix<'a, Item, DynamicMatrix<Item, FLayout, Dynamic, Dynamic>, FLayout, Dynamic, Dynamic>;
-
-// /// A matrix is a simple enum struct.
-// /// This can be a base matrix or something
-// /// representing the sum, product, etc. on
-// /// matrices.
-// pub struct Matrix<'a, Item, MatImpl, Layout, RS, CS>(
-//     MatImpl,
-//     PhantomData<Item>,
-//     PhantomData<Layout>,
-//     PhantomData<RS>,
-//     PhantomData<CS>,
-//     PhantomData<&'a ()>,
-// )
-// where
-//     Item: Scalar,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-//     MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>;
-
-// impl<'a, Item, MatImpl, Layout, RS, CS> Matrix<'a, Item, MatImpl, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     pub fn new(mat: MatImpl) -> Self {
-//         Self(
-//             mat,
-//             PhantomData,
-//             PhantomData,
-//             PhantomData,
-//             PhantomData,
-//             PhantomData,
-//         )
-//     }
-
-//     // /// Return a new iterator that iterates through the matrix in memory order
-//     // pub fn iter(
-//     //     &self,
-//     // ) -> MatrixIterator<'a, Item, Matrix<Item, MatImpl, Layout, Size>, Layout, Size> {
-//     //     MatrixIterator::new(self)
-//     // }
-
-//     /// Convert a reference to a matrix into an owned matrix.
-//     ///
-//     /// The owned matrix itself holds a reference to the original matrix and does
-//     /// not allocate new memory. This allows handing over matrices to functions
-//     /// that expect a matrix and not a reference to a matrix.
-//     pub fn from_ref(
-//         mat: &'a Matrix<'a, Item, MatImpl, Layout, RS, CS>,
-//     ) -> MatrixFromRef<'a, Item, MatImpl, Layout, RS, CS> {
-//         Matrix::new(MatrixRef::new(mat))
-//     }
-
-//     // /// Create a new matrix from a given slice.
-//     // pub fn from_slice(
-//     //     slice: &'a [Item],
-//     //     rows: usize,
-//     //     cols: usize,
-//     // ) -> Matrix<'a, Item, SliceMatrix<'a, Item, Layout, RS, CS>, Layout, RS, CS> {
-//     //     Matrix::new(SliceMatrix::new(slice, rows, cols))
-//     // }
-// }
-
-// macro_rules! matrix_traits_impl {
-//     ($Layout:ty, $RS:ty, $CS:ty) => {
-//         impl<'a, Item, MatImpl> Matrix<'a, Item, MatImpl, $Layout, $RS, $CS>
-//         where
-//             Item: Scalar,
-//             MatImpl: MatrixTrait<'a, Item, $Layout, $RS, $CS>,
-//         {
-//             pub fn eval(
-//                 &self,
-//             ) -> Matrix<Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS> {
-//                 let (rows, cols) = self.dim();
-//                 let nelems = rows * cols;
-//                 let mut res = Matrix::<
-//                     Item,
-//                     DynamicMatrix<Item, $Layout, $RS, $CS>,
-//                     $Layout,
-//                     $RS,
-//                     $CS,
-//                 >::from_dimension(rows, cols);
-
-//                 unsafe {
-//                     for index in 0..nelems {
-//                         *res.get1d_unchecked_mut(index) = self.get1d_unchecked(index);
-//                     }
-//                 }
-//                 res
-//             }
-//         }
-
-//         impl<'a, Item: Scalar>
-//             Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
-//         {
-//             /// Create a new matrix with dimensions (rows, cols) using C Layout
-//             pub fn from_dimension(rows: usize, cols: usize) -> Self {
-//                 Self::new(DynamicMatrix::<Item, $Layout, $RS, $CS>::new(rows, cols))
-//             }
-//         }
-
-//         impl<'a, Item: Scalar> Pointer
-//             for Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
-//         {
-//             type Item = Item;
-
-//             fn as_ptr(&self) -> *const Self::Item {
-//                 self.0.as_ptr()
-//             }
-//         }
-
-//         impl<'a, Item: Scalar> PointerMut
-//             for Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
-//         {
-//             type Item = Item;
-
-//             fn as_mut_ptr(&mut self) -> *mut Self::Item {
-//                 self.0.as_mut_ptr()
-//             }
-//         }
-
-//         impl<'a, Item: Scalar> Stride
-//             for Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
-//             {
-//                 fn row_stride(&self) -> usize {
-//                     self.0.row_stride()
-//                 }
-
-//                 fn column_stride(&self) -> usize {
-//                     self.0.column_stride()
-//                 }
-//             }
-
-//         impl<'a, Item> SafeMutableRandomAccess
-//             for Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
-//         where
-//             Item: Scalar,
-//         {
-//             type Output = Item;
-
-//             #[inline]
-//             fn get_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
-//                 self.0.get_mut(row, col)
-//             }
-//             #[inline]
-//             fn get1d_mut(&mut self, index: usize) -> &mut Self::Output {
-//                 self.0.get1d_mut(index)
-//             }
-//         }
-
-//         impl<'a, Item> UnsafeMutableRandomAccess
-//             for Matrix<'a, Item, DynamicMatrix<Item, $Layout, $RS, $CS>, $Layout, $RS, $CS>
-//         where
-//             Item: Scalar,
-//         {
-//             type Output = Item;
-
-//             #[inline]
-//             unsafe fn get_unchecked_mut(&mut self, row: usize, col: usize) -> &mut Self::Output {
-//                 self.0.get_unchecked_mut(row, col)
-//             }
-//             #[inline]
-//             unsafe fn get1d_unchecked_mut(&mut self, index: usize) -> &mut Self::Output {
-//                 self.0.get1d_unchecked_mut(index)
-//             }
-//         }
-//     };
-// }
-
-// matrix_traits_impl!(CLayout, Dynamic, Dynamic);
-// matrix_traits_impl!(FLayout, Dynamic, Dynamic);
-
-// impl<'a, Item, MatImpl, Layout, RS, CS> Dimensions for Matrix<'a, Item, MatImpl, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     fn dim(&self) -> (usize, usize) {
-//         self.0.dim()
-//     }
-// }
-
-// impl<'a, Item, MatImpl, Layout, RS, CS> SafeRandomAccess
-//     for Matrix<'a, Item, MatImpl, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     type Output = Item;
-
-//     #[inline]
-//     fn get(&self, row: usize, col: usize) -> Self::Output {
-//         self.0.get(row, col)
-//     }
-//     #[inline]
-//     fn get1d(&self, index: usize) -> Self::Output {
-//         self.0.get1d(index)
-//     }
-// }
-
-// impl<'a, Item, MatImpl, Layout, RS, CS> UnsafeRandomAccess
-//     for Matrix<'a, Item, MatImpl, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     type Output = Item;
-
-//     #[inline]
-//     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
-//         self.0.get_unchecked(row, col)
-//     }
-//     #[inline]
-//     unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
-//         self.0.get1d_unchecked(index)
-//     }
-// }
-
-// impl<'a, Item, MatImpl, Layout, RS, CS> SizeType for Matrix<'a, Item, MatImpl, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     type R = RS;
-//     type C = CS;
-// }
-
-// impl<'a, Item, MatImpl, Layout, RS, CS> LayoutType<Layout>
-//     for Matrix<'a, Item, MatImpl, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     MatImpl: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-// }
-
-// /// A MatrixRef is like a matrix but holds a reference to an implementation.
-// pub struct MatrixRef<'a, Item, Mat, Layout, RS, CS>(
-//     &'a Mat,
-//     PhantomData<Item>,
-//     PhantomData<Layout>,
-//     PhantomData<RS>,
-//     PhantomData<CS>,
-//     PhantomData<&'a ()>,
-// )
-// where
-//     Item: Scalar,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-//     Mat: MatrixTrait<'a, Item, Layout, RS, CS>;
-
-// impl<'a, Item, Mat, Layout, RS, CS> MatrixRef<'a, Item, Mat, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     pub fn new(mat: &'a Mat) -> Self {
-//         Self(
-//             mat,
-//             PhantomData,
-//             PhantomData,
-//             PhantomData,
-//             PhantomData,
-//             PhantomData,
-//         )
-//     }
-// }
-
-// impl<'a, Item, Mat, Layout, RS, CS> Dimensions for MatrixRef<'a, Item, Mat, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     fn dim(&self) -> (usize, usize) {
-//         self.0.dim()
-//     }
-// }
-
-// impl<'a, Item, Mat, Layout, RS, CS> SafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     type Output = Item;
-
-//     #[inline]
-//     fn get(&self, row: usize, col: usize) -> Self::Output {
-//         self.0.get(row, col)
-//     }
-//     #[inline]
-//     fn get1d(&self, index: usize) -> Self::Output {
-//         self.0.get1d(index)
-//     }
-// }
-
-// impl<'a, Item, Mat, Layout, RS, CS> UnsafeRandomAccess for MatrixRef<'a, Item, Mat, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     type Output = Item;
-
-//     #[inline]
-//     unsafe fn get_unchecked(&self, row: usize, col: usize) -> Self::Output {
-//         self.0.get_unchecked(row, col)
-//     }
-//     #[inline]
-//     unsafe fn get1d_unchecked(&self, index: usize) -> Self::Output {
-//         self.0.get1d_unchecked(index)
-//     }
-// }
-
-// impl<'a, Item, Mat, Layout, RS, CS> SizeType for MatrixRef<'a, Item, Mat, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-//     type R = RS;
-//     type C = CS;
-// }
-
-// impl<'a, Item, Mat, Layout, RS, CS> LayoutType<Layout> for MatrixRef<'a, Item, Mat, Layout, RS, CS>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, RS, CS>,
-//     Layout: LayoutIdentifier,
-//     RS: SizeIdentifier,
-//     CS: SizeIdentifier,
-// {
-// }
-
-// // Extra traits for vectors
-// matrix_traits_impl!(VLayout, Dynamic, Fixed1);
-// matrix_traits_impl!(VLayout, Fixed1, Dynamic);
-
-// impl<'a, Item, Mat, Layout> VectorLength for Matrix<'a, Item, Mat, Layout, Dynamic, Fixed1>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, Dynamic, Fixed1>,
-//     Layout: LayoutIdentifier,
-// {
-//     fn len(&self) -> usize {
-//         self.dim().0
-//     }
-// }
-
-// impl<'a, Item, Mat, Layout> VectorLength for Matrix<'a, Item, Mat, Layout, Fixed1, Dynamic>
-// where
-//     Item: Scalar,
-//     Mat: MatrixTrait<'a, Item, Layout, Fixed1, Dynamic>,
-//     Layout: LayoutIdentifier,
-// {
-//     fn len(&self) -> usize {
-//         self.dim().1
-//     }
-// }
-
-// // impl<'a, Item: Scalar> CMatrixD<'a, Item> {
-// //     // The distance in memory between consecutive rows.
-// //     //
-// //     // If a matrix is of dimension (m, n) then for
-// //     // Fortran style ordering the result is 1 and for C style
-// //     // ordering the result is n.
-// //     pub fn row_stride(&self) -> usize {
-// //         self.dim().1
-// //     }
-
-// //     // The distance in memory between consecutive columns.
-// //     //
-// //     // If a matrix is of dimension (m, n) then for
-// //     // Fortran style ordering the result is m and for C style
-// //     // ordering the result is 1.
-// //     pub fn column_stride(&self) -> usize {
-// //         1
-// //     }
-// // }
-
-// // impl<'a, Item: Scalar> FMatrixD<'a, Item> {
-// //     // The distance in memory between consecutive rows.
-// //     //
-// //     // If a matrix is of dimension (m, n) then for
-// //     // Fortran style ordering the result is 1 and for C style
-// //     // ordering the result is n.
-// //     pub fn row_stride(&self) -> usize {
-// //         1
-// //     }
-
-// //     // The distance in memory between consecutive columns.
-// //     //
-// //     // If a matrix is of dimension (m, n) then for
-// //     // Fortran style ordering the result is m and for C style
-// //     // ordering the result is 1.
-// //     pub fn column_stride(&self) -> usize {
-// //         self.dim().0
-// //     }
-// // }
 
 // #[cfg(test)]
 // mod test {

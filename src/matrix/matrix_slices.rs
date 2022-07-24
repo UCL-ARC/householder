@@ -3,6 +3,7 @@
 use super::Matrix;
 use crate::base_matrix::BaseMatrix;
 use crate::data_container::{DataContainer, DataContainerMut, SliceContainer, SliceContainerMut};
+use crate::layouts::*;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 
@@ -28,23 +29,19 @@ macro_rules! block_matrix {
                 CS,
             > {
                 assert!(
-                    (top_left.0 + dim.0 <= self.dim().0) & (top_left.1 + dim.1 <= self.dim().1),
+                    (top_left.0 + dim.0 <= self.layout().dim().0) & (top_left.1 + dim.1 <= self.layout().dim().1),
                     "Lower right corner of block {:?} out of bounds for matrix with dim {:?}",
                     (top_left.0 + dim.0 - 1, top_left.1 + dim.1 - 1),
-                    self.dim()
+                    self.layout().dim()
                 );
-                let stride = (self.row_stride(), self.column_stride());
-                let start_index = $Layout::get_raw_index_from_2d_index(
+                let start_index = self.layout().convert_2d_raw(
                     top_left.0,
                     top_left.1,
-                    self.dim(),
-                    stride,
                 );
-                let end_index = $Layout::get_raw_index_from_2d_index(
+                let end_index = self.layout().convert_2d_raw(
                     top_left.0 + dim.0 - 1,
                     top_left.1 + dim.1 - 1,
-                    self.dim(),
-                    stride,
+
                 ) + 1;
 
                 let data = SliceContainer::<'a, Item>::new(self.get_slice(start_index, end_index));
@@ -55,7 +52,7 @@ macro_rules! block_matrix {
                     $StrideLayout,
                     RS,
                     CS,
-                >::from_data(data, dim, stride)
+                >::from_data(data, dim, self.layout().stride())
             }
         }
         impl<
@@ -77,25 +74,23 @@ macro_rules! block_matrix {
                 RS,
                 CS,
             > {
+                let stride = self.layout().stride();
+
                 assert!(
-                    (top_left.0 + dim.0 <= self.dim().0) & (top_left.1 + dim.1 <= self.dim().1),
+                    (top_left.0 + dim.0 <= self.layout().dim().0) & (top_left.1 + dim.1 <= self.layout().dim().1),
                     "Lower right corner of block {:?} out of bounds for matrix with dim {:?}",
                     (top_left.0 + dim.0 - 1, top_left.1 + dim.1 - 1),
-                    self.dim()
+                    self.layout().dim()
                 );
 
-                let stride = (self.row_stride(), self.column_stride());
-                let start_index = $Layout::get_raw_index_from_2d_index(
+                let start_index = self.layout().convert_2d_raw(
                     top_left.0,
                     top_left.1,
-                    self.dim(),
-                    stride,
+
                 );
-                let end_index = $Layout::get_raw_index_from_2d_index(
+                let end_index = self.layout().convert_2d_raw(
                     top_left.0 + dim.0 - 1,
                     top_left.1 + dim.1 - 1,
-                    self.dim(),
-                    stride,
                 ) + 1;
 
                 let data =
@@ -113,10 +108,12 @@ macro_rules! block_matrix {
     };
 }
 
-block_matrix!(CLayout, StrideCLayout);
-block_matrix!(StrideCLayout, StrideCLayout);
-block_matrix!(FLayout, StrideFLayout);
-block_matrix!(StrideFLayout, StrideFLayout);
+block_matrix!(RowMajor, ArbitraryStrideRowMajor);
+block_matrix!(ColumnMajor, ArbitraryStrideColumnMajor);
+block_matrix!(ArbitraryStrideRowMajor, ArbitraryStrideRowMajor);
+block_matrix!(ArbitraryStrideColumnMajor, ArbitraryStrideColumnMajor);
+
+
 
 #[cfg(test)]
 mod test {
@@ -126,7 +123,7 @@ mod test {
 
     #[test]
     fn test_simple_slice() {
-        let mut mat = MatrixD::<f64, CLayout>::from_zeros(3, 4);
+        let mut mat = MatrixD::<f64, RowMajor>::from_zeros(3, 4);
         *mat.get_mut(1, 2) = 1.0;
 
         let slice = mat.block((0, 1), (2, 2));
@@ -137,7 +134,7 @@ mod test {
 
     #[test]
     fn test_double_slice() {
-        let mut mat = MatrixD::<f64, CLayout>::from_zeros(3, 4);
+        let mut mat = MatrixD::<f64, RowMajor>::from_zeros(3, 4);
         *mat.get_mut(1, 2) = 1.0;
 
         let slice1 = mat.block((0, 1), (3, 3));

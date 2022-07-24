@@ -2,6 +2,7 @@
 
 use crate::base_matrix::BaseMatrix;
 use crate::data_container::{ArrayContainer, VectorContainer};
+use crate::layouts::{RowMajor, ColumnMajor};
 use crate::matrix::Matrix;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
@@ -29,24 +30,24 @@ macro_rules! from_zeros_fixed {
     };
 }
 
-from_zeros_fixed!(Fixed2, Fixed2, CLayout);
-from_zeros_fixed!(Fixed1, Fixed2, CLayout);
+from_zeros_fixed!(Fixed2, Fixed2, RowMajor);
+from_zeros_fixed!(Fixed1, Fixed2, RowMajor);
 
-from_zeros_fixed!(Fixed3, Fixed3, CLayout);
-from_zeros_fixed!(Fixed1, Fixed3, CLayout);
+from_zeros_fixed!(Fixed3, Fixed3, RowMajor);
+from_zeros_fixed!(Fixed1, Fixed3, RowMajor);
 
-from_zeros_fixed!(Fixed2, Fixed3, CLayout);
-from_zeros_fixed!(Fixed3, Fixed2, CLayout);
+from_zeros_fixed!(Fixed2, Fixed3, RowMajor);
+from_zeros_fixed!(Fixed3, Fixed2, RowMajor);
 
 
-from_zeros_fixed!(Fixed2, Fixed2, FLayout);
-from_zeros_fixed!(Fixed1, Fixed2, FLayout);
+from_zeros_fixed!(Fixed2, Fixed2, ColumnMajor);
+from_zeros_fixed!(Fixed1, Fixed2, ColumnMajor);
 
-from_zeros_fixed!(Fixed3, Fixed3, FLayout);
-from_zeros_fixed!(Fixed1, Fixed3, FLayout);
+from_zeros_fixed!(Fixed3, Fixed3, ColumnMajor);
+from_zeros_fixed!(Fixed1, Fixed3, ColumnMajor);
 
-from_zeros_fixed!(Fixed2, Fixed3, FLayout);
-from_zeros_fixed!(Fixed3, Fixed2, FLayout);
+from_zeros_fixed!(Fixed2, Fixed3, ColumnMajor);
+from_zeros_fixed!(Fixed3, Fixed2, ColumnMajor);
 
 
 
@@ -68,8 +69,8 @@ macro_rules! from_zeros_dynamic_matrix {
     };
 }
 
-from_zeros_dynamic_matrix!(CLayout);
-from_zeros_dynamic_matrix!(FLayout);
+from_zeros_dynamic_matrix!(RowMajor);
+from_zeros_dynamic_matrix!(ColumnMajor);
 
 
 
