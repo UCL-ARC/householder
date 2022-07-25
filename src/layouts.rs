@@ -114,12 +114,19 @@ impl LayoutType for RowMajor {
         self.dim
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (self.dim.1, 1)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim.0 * self.dim.1
+    }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim())
     }
 }
 
@@ -151,13 +158,21 @@ impl LayoutType for ColumnMajor {
         self.dim
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (1, self.dim.0)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim.0 * self.dim.1
     }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim())
+    }
+
 }
 
 impl LayoutType for ArbitraryStrideRowMajor {
@@ -189,13 +204,21 @@ impl LayoutType for ArbitraryStrideRowMajor {
         self.dim
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (self.dim.1, 1)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim.0 * self.dim.1
     }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim())
+    }
+
 }
 
 impl LayoutType for ArbitraryStrideColumnMajor {
@@ -227,13 +250,22 @@ impl LayoutType for ArbitraryStrideColumnMajor {
         self.dim
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (1, self.dim.0)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim.0 * self.dim.1
     }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim())
+    }
+
+
 }
 
 impl LayoutType for ColumnVector {
@@ -264,13 +296,21 @@ impl LayoutType for ColumnVector {
         (self.dim, 1)
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (1, 1)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim
     }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim().0)
+    }
+
 }
 
 impl LayoutType for RowVector {
@@ -301,13 +341,21 @@ impl LayoutType for RowVector {
         (1, self.dim)
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (1, 1)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim
     }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim().1)
+    }
+
 }
 
 //--------------
@@ -340,13 +388,21 @@ impl LayoutType for ArbitraryStrideColumnVector {
         (self.dim, 1)
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (self.stride, 1)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim
     }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim().0)
+    }
+
 }
 
 impl LayoutType for ArbitraryStrideRowVector {
@@ -377,13 +433,21 @@ impl LayoutType for ArbitraryStrideRowVector {
         (1, self.dim)
     }
 
+    #[inline]
     fn stride(&self) -> (IndexType, IndexType) {
         (1, self.stride)
     }
 
+    #[inline]
     fn number_of_elements(&self) -> IndexType {
         self.dim
     }
+
+    #[inline]
+    fn index_layout(&self) -> Self::IndexLayout {
+        Self::IndexLayout::new(self.dim().1)
+    }
+
 }
 
 impl BaseLayoutType for RowMajor {

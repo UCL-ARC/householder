@@ -26,6 +26,8 @@ pub trait LayoutType {
     fn convert_1d_raw(&self, index: IndexType) -> IndexType;
 
     fn convert_2d_raw(&self, row: IndexType, col: IndexType) -> IndexType;
+
+    fn index_layout(&self) -> Self::IndexLayout;
 }
 
 pub trait Layout {

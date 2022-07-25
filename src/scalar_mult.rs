@@ -6,11 +6,12 @@ use crate::types::{c32, c64, IndexType, Scalar};
 use std::marker::PhantomData;
 
 pub type ScalarProdMat<Item, MatImpl, L, RS, CS> =
-    Matrix<Item, ScalarMult<Item, MatImpl, L, RS, CS>, L, RS, CS>;
+    Matrix<Item, ScalarMult<Item, MatImpl, L, RS, CS>, <L as LayoutType>::IndexLayout, RS, CS>;
 
 pub struct ScalarMult<Item, MatImpl, L, RS, CS>(
     Matrix<Item, MatImpl, L, RS, CS>,
     Item,
+    L::IndexLayout,
     PhantomData<Item>,
     PhantomData<L>,
     PhantomData<RS>,
@@ -32,9 +33,11 @@ impl<
     > ScalarMult<Item, MatImpl, L, RS, CS>
 {
     pub fn new(mat: Matrix<Item, MatImpl, L, RS, CS>, scalar: Item) -> Self {
+        let layout = mat.layout().index_layout();
         Self(
             mat,
             scalar,
+            layout,
             PhantomData,
             PhantomData,
             PhantomData,
@@ -42,7 +45,6 @@ impl<
         )
     }
 }
-
 
 impl<
         Item: Scalar,
@@ -64,16 +66,13 @@ impl<
         CS: SizeIdentifier,
     > Layout for ScalarMult<Item, MatImpl, L, RS, CS>
 {
-
-    type Impl = L;
+    type Impl = L::IndexLayout;
 
     #[inline]
     fn layout(&self) -> &Self::Impl {
-        self.0.layout()
+        &self.2
     }
-
 }
-
 
 impl<
         Item: Scalar,
@@ -135,7 +134,7 @@ macro_rules! scalar_mult_impl {
                 CS: SizeIdentifier,
             > std::ops::Mul<$Scalar> for Matrix<$Scalar, MatImpl, L, RS, CS>
         {
-            type Output = Matrix<$Scalar, ScalarMult<$Scalar, MatImpl, L, RS, CS>, L, RS, CS>;
+            type Output = ScalarProdMat<$Scalar, MatImpl, L, RS, CS>;
 
             fn mul(self, rhs: $Scalar) -> Self::Output {
                 Matrix::new(ScalarMult::new(self, rhs))

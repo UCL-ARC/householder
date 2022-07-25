@@ -10,6 +10,7 @@ pub mod base_matrix;
 pub mod matrix;
 pub mod matrix_ref;
 pub mod scalar_mult;
+pub mod addition;
 
 //pub mod traits;
 //pub mod slice_matrix;
