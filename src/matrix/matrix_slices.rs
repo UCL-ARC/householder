@@ -46,13 +46,15 @@ macro_rules! block_matrix {
 
                 let data = SliceContainer::<'a, Item>::new(self.get_slice(start_index, end_index));
 
+                let new_layout = $StrideLayout::new(dim, self.layout().stride());
+
                 Matrix::<
                     Item,
                     BaseMatrix<Item, SliceContainer<'a, Item>, $StrideLayout, RS, CS>,
                     $StrideLayout,
                     RS,
                     CS,
-                >::from_data(data, dim, self.layout().stride())
+                >::from_data(data, new_layout)
             }
         }
         impl<
@@ -74,7 +76,7 @@ macro_rules! block_matrix {
                 RS,
                 CS,
             > {
-                let stride = self.layout().stride();
+                let new_layout = $StrideLayout::new(dim, self.layout().stride());
 
                 assert!(
                     (top_left.0 + dim.0 <= self.layout().dim().0) & (top_left.1 + dim.1 <= self.layout().dim().1),
@@ -102,7 +104,7 @@ macro_rules! block_matrix {
                     $StrideLayout,
                     RS,
                     CS,
-                >::from_data(data, dim, stride)
+                >::from_data(data, new_layout)
             }
         }
     };
@@ -123,7 +125,7 @@ mod test {
 
     #[test]
     fn test_simple_slice() {
-        let mut mat = MatrixD::<f64, RowMajor>::from_zeros(3, 4);
+        let mut mat = MatrixD::<f64, RowMajor>::zeros_from_dim(3, 4);
         *mat.get_mut(1, 2) = 1.0;
 
         let slice = mat.block((0, 1), (2, 2));
@@ -134,7 +136,7 @@ mod test {
 
     #[test]
     fn test_double_slice() {
-        let mut mat = MatrixD::<f64, RowMajor>::from_zeros(3, 4);
+        let mut mat = MatrixD::<f64, RowMajor>::zeros_from_dim(3, 4);
         *mat.get_mut(1, 2) = 1.0;
 
         let slice1 = mat.block((0, 1), (3, 3));

@@ -18,7 +18,7 @@ pub struct ScalarMult<Item, MatImpl, L, RS, CS>(
 )
 where
     Item: Scalar,
-    L: LayoutIdentifier,
+    L: LayoutType,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
     MatImpl: MatrixTrait<Item, L, RS, CS>;
@@ -26,7 +26,7 @@ where
 impl<
         Item: Scalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
-        L: LayoutIdentifier,
+        L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
     > ScalarMult<Item, MatImpl, L, RS, CS>
@@ -43,20 +43,11 @@ impl<
     }
 }
 
-impl<
-        Item: Scalar,
-        MatImpl: MatrixTrait<Item, L, RS, CS>,
-        L: LayoutIdentifier,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > LayoutType<L> for ScalarMult<Item, MatImpl, L, RS, CS>
-{
-}
 
 impl<
         Item: Scalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
-        L: LayoutIdentifier,
+        L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
     > SizeType for ScalarMult<Item, MatImpl, L, RS, CS>
@@ -68,45 +59,26 @@ impl<
 impl<
         Item: Scalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
-        L: LayoutIdentifier,
+        L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-    > Dimensions for ScalarMult<Item, MatImpl, L, RS, CS>
+    > Layout for ScalarMult<Item, MatImpl, L, RS, CS>
 {
-    #[inline]
-    fn dim(&self) -> (IndexType, IndexType) {
-        self.0.dim()
-    }
+
+    type Impl = L;
 
     #[inline]
-    fn number_of_elements(&self) -> IndexType {
-        self.0.number_of_elements()
+    fn layout(&self) -> &Self::Impl {
+        self.0.layout()
     }
+
 }
+
 
 impl<
         Item: Scalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
-        L: LayoutIdentifier,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > Stride for ScalarMult<Item, MatImpl, L, RS, CS>
-{
-    #[inline]
-    fn row_stride(&self) -> IndexType {
-        self.0.row_stride()
-    }
-
-    #[inline]
-    fn column_stride(&self) -> IndexType {
-        self.0.column_stride()
-    }
-}
-
-impl<
-        Item: Scalar,
-        MatImpl: MatrixTrait<Item, L, RS, CS>,
-        L: LayoutIdentifier,
+        L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
     > UnsafeRandomAccess for ScalarMult<Item, MatImpl, L, RS, CS>
@@ -128,7 +100,7 @@ macro_rules! scalar_mult_impl {
     ($Scalar:ty) => {
         impl<
                 MatImpl: MatrixTrait<$Scalar, L, RS, CS>,
-                L: LayoutIdentifier,
+                L: LayoutType,
                 RS: SizeIdentifier,
                 CS: SizeIdentifier,
             > std::ops::Mul<Matrix<$Scalar, MatImpl, L, RS, CS>> for $Scalar
@@ -143,7 +115,7 @@ macro_rules! scalar_mult_impl {
         impl<
                 'a,
                 MatImpl: MatrixTrait<$Scalar, L, RS, CS>,
-                L: LayoutIdentifier,
+                L: LayoutType,
                 RS: SizeIdentifier,
                 CS: SizeIdentifier,
             > std::ops::Mul<&'a Matrix<$Scalar, MatImpl, L, RS, CS>> for $Scalar
@@ -158,7 +130,7 @@ macro_rules! scalar_mult_impl {
 
         impl<
                 MatImpl: MatrixTrait<$Scalar, L, RS, CS>,
-                L: LayoutIdentifier,
+                L: LayoutType,
                 RS: SizeIdentifier,
                 CS: SizeIdentifier,
             > std::ops::Mul<$Scalar> for Matrix<$Scalar, MatImpl, L, RS, CS>
@@ -173,7 +145,7 @@ macro_rules! scalar_mult_impl {
         impl<
                 'a,
                 MatImpl: MatrixTrait<$Scalar, L, RS, CS>,
-                L: LayoutIdentifier,
+                L: LayoutType,
                 RS: SizeIdentifier,
                 CS: SizeIdentifier,
             > std::ops::Mul<$Scalar> for &'a Matrix<$Scalar, MatImpl, L, RS, CS>
@@ -197,11 +169,13 @@ scalar_mult_impl!(c64);
 
 mod test {
 
+    use crate::layouts::RowMajor;
+
     use super::*;
 
     #[test]
     fn scalar_mult() {
-        let mut mat = MatrixD::<f64, CLayout>::from_zeros(2, 3);
+        let mut mat = MatrixD::<f64, RowMajor>::zeros_from_dim(2, 3);
 
         *mat.get_mut(1, 2) = 5.0;
 

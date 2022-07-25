@@ -10,8 +10,7 @@ use crate::base_matrix::BaseMatrix;
 use crate::data_container::{ArrayContainer, DataContainer, VectorContainer};
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
-use crate::layouts::*;
-use crate::types::{IndexType, Scalar};
+use crate::types::Scalar;
 use std::marker::PhantomData;
 
 pub type RefMat<'a, Item, MatImpl, L, RS, CS> =
@@ -65,48 +64,13 @@ impl<
     }
 }
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, RowMajor, RS, CS>, RowMajor, RS, CS>
-{
-    pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
 
-        Self::new(BaseMatrix::<Item, Data, RowMajor, RS, CS>::new(data, RowMajor::new(dim)))
-    }
-}
-
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, ColumnMajor, RS, CS>, ColumnMajor, RS, CS>
+impl<Item: Scalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
+    Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>
 {
-    pub fn from_data(data: Data, dim: (IndexType, IndexType)) -> Self {
-        Self::new(BaseMatrix::<Item, Data, ColumnMajor, RS, CS>::new(data, ColumnMajor::new(dim)))
-    }
-}
+    pub fn from_data(data: Data, layout: L) -> Self {
 
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, ArbitraryStrideRowMajor, RS, CS>, ArbitraryStrideRowMajor, RS, CS>
-{
-    pub fn from_data(
-        data: Data,
-        dim: (IndexType, IndexType),
-        stride: (IndexType, IndexType),
-    ) -> Self {
-        Self::new(BaseMatrix::<Item, Data, ArbitraryStrideRowMajor, RS, CS>::new(
-            data, ArbitraryStrideRowMajor::new(dim, stride),
-        ))
-    }
-}
-
-impl<Item: Scalar, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, ArbitraryStrideColumnMajor, RS, CS>, ArbitraryStrideColumnMajor, RS, CS>
-{
-    pub fn from_data(
-        data: Data,
-        dim: (IndexType, IndexType),
-        stride: (IndexType, IndexType),
-    ) -> Self {
-        Self::new(BaseMatrix::<Item, Data, ArbitraryStrideColumnMajor, RS, CS>::new(
-            data, ArbitraryStrideColumnMajor::new(dim, stride),
-        ))
+        Self::new(BaseMatrix::<Item, Data, L, RS, CS>::new(data, layout))
     }
 }
 

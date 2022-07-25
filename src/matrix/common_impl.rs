@@ -1,7 +1,7 @@
 //! Implementation of matrix traits and methods
 
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::{ArrayContainer, DataContainer, DataContainerMut};
+use crate::data_container::{DataContainer, DataContainerMut};
 use crate::matrix::{Matrix, MatrixD};
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
@@ -73,6 +73,22 @@ impl<
         self.0.get1d_unchecked_mut(index)
     }
 }
+
+impl<Item: Scalar,
+    L: LayoutType,
+    MatImpl: MatrixTrait<Item, L, Dynamic, Dynamic>> Matrix<Item, MatImpl, L, Dynamic, Dynamic>
+    {
+        pub fn eval(&self) -> MatrixD<Item, <L as LayoutType>::IndexLayout> {
+            let dim = self.layout().dim();
+            let mut result = MatrixD::<Item, <L as LayoutType>::IndexLayout>::zeros_from_dim(dim.0, dim.1);
+            unsafe {
+                for index in 0..self.layout().number_of_elements() {
+                    *result.get1d_unchecked_mut(index) = self.get1d_unchecked(index);
+                }
+            }
+            result
+        }
+    }
 
 // macro_rules! eval_dynamic_matrix {
 //     ($L:ident) => {

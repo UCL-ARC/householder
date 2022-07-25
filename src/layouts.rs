@@ -1,5 +1,5 @@
 //! Definition of typical memory layouts
-use crate::traits::LayoutType;
+use crate::traits::*;
 use crate::types::IndexType;
 
 pub struct RowMajor {
@@ -27,7 +27,6 @@ pub struct ArbitraryStrideRowVector {
     dim: IndexType,
     stride: IndexType,
 }
-
 
 pub struct ArbitraryStrideRowMajor {
     dim: (IndexType, IndexType),
@@ -384,5 +383,54 @@ impl LayoutType for ArbitraryStrideRowVector {
 
     fn number_of_elements(&self) -> IndexType {
         self.dim
+    }
+}
+
+impl BaseLayoutType for RowMajor {
+    fn from_dimension(dim: (IndexType, IndexType)) -> Self {
+        Self { dim }
+    }
+}
+
+impl BaseLayoutType for ColumnMajor {
+    fn from_dimension(dim: (IndexType, IndexType)) -> Self {
+        Self { dim }
+    }
+}
+
+impl BaseLayoutType for RowVector {
+    fn from_dimension(dim: (IndexType, IndexType)) -> Self {
+        assert_eq!(
+            dim.0, 1,
+            "Number of rows is {} but must be one for RowVector.",
+            dim.0
+        );
+        Self { dim: dim.1 }
+    }
+}
+impl BaseLayoutType for ColumnVector {
+    fn from_dimension(dim: (IndexType, IndexType)) -> Self {
+        assert_eq!(
+            dim.0, 1,
+            "Number of columns is {} but must be one for ColumnVector.",
+            dim.1
+        );
+        Self { dim: dim.0 }
+    }
+}
+
+impl MatrixBaseLayoutType for RowMajor {}
+
+impl MatrixBaseLayoutType for ColumnMajor {}
+
+impl VectorBaseLayoutType for RowVector {
+    fn from_length(length: IndexType) -> Self {
+        Self { dim: length }
+    }
+}
+
+impl VectorBaseLayoutType for ColumnVector {
+    fn from_length(length: IndexType) -> Self {
+        Self { dim: length }
     }
 }

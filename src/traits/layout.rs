@@ -2,9 +2,18 @@
 
 use crate::types::IndexType;
 
-pub trait LayoutType {
+pub trait BaseLayoutType: LayoutType {
+    fn from_dimension(dim: (IndexType, IndexType)) -> Self;
+}
 
-    type IndexLayout: LayoutType; 
+pub trait VectorBaseLayoutType: BaseLayoutType {
+    fn from_length(length: IndexType) -> Self;
+}
+
+pub trait MatrixBaseLayoutType: BaseLayoutType {}
+
+pub trait LayoutType {
+    type IndexLayout: BaseLayoutType;
 
     fn stride(&self) -> (IndexType, IndexType);
     fn dim(&self) -> (IndexType, IndexType);
@@ -24,4 +33,3 @@ pub trait Layout {
 
     fn layout(&self) -> &Self::Impl;
 }
-
