@@ -11,6 +11,7 @@ pub use matrix::*;
 
 
 
+
 // /// Implement this trait to provide an iterator
 // pub trait Iterable<'a, Item: Scalar, Iter: Iterator<Item = Item>> {
 //     fn iter(&'a self) -> Iter;

@@ -4,6 +4,8 @@
 pub mod common_impl;
 pub mod constructors;
 //pub mod vector_impl;
+pub mod base_methods;
+pub mod random;
 pub mod matrix_slices;
 
 use crate::base_matrix::BaseMatrix;
@@ -15,6 +17,12 @@ use std::marker::PhantomData;
 
 pub type RefMat<'a, Item, MatImpl, L, RS, CS> =
     Matrix<Item, MatrixRef<'a, Item, MatImpl, L, RS, CS>, L, RS, CS>;
+
+pub type GenericBaseMatrix<Item, L, Data, RS, CS> =
+    Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>;
+
+pub type GenericBaseMatrixMut<Item, L, Data, RS, CS> =
+    Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>;
 
 pub type MatrixD<Item, L> =
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>;
@@ -64,16 +72,18 @@ impl<
     }
 }
 
-
-impl<Item: Scalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier, Data: DataContainer<Item = Item>>
-    Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>
+impl<
+        Item: Scalar,
+        L: LayoutType,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+        Data: DataContainer<Item = Item>,
+    > Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>
 {
     pub fn from_data(data: Data, layout: L) -> Self {
-
         Self::new(BaseMatrix::<Item, Data, L, RS, CS>::new(data, layout))
     }
 }
-
 
 // #[cfg(test)]
 // mod test {
