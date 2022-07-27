@@ -1,8 +1,6 @@
 //! Methods for the creation of random matrices.
 
-use crate::base_matrix::*;
 use crate::data_container::DataContainerMut;
-use crate::matrix::Matrix;
 use crate::traits::*;
 use crate::types::*;
 use rand::prelude::*;
@@ -27,7 +25,10 @@ macro_rules! rand_impl {
     };
 }
 
+rand_impl!(f32);
 rand_impl!(f64);
+rand_impl!(c32);
+rand_impl!(c64);
 
 // Random number implementations for the scalar types
 trait RandScalar: Scalar {
