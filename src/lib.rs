@@ -11,6 +11,7 @@ pub mod matrix;
 pub mod matrix_ref;
 pub mod scalar_mult;
 pub mod addition;
+pub mod tools;
 
 //pub mod traits;
 //pub mod slice_matrix;

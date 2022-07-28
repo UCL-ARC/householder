@@ -23,7 +23,7 @@ itertools = "0.10"
 rand_distr = "0.4"
 thiserror = "1.0"
 matrixmultiply = "0.3"
-approx = "0.5"
+approx = { version = "0.5", features=["num-complex"] }
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["html_reports"] }
