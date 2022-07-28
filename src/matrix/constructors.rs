@@ -3,7 +3,7 @@
 use crate::base_matrix::BaseMatrix;
 use crate::data_container::{ArrayContainer, VectorContainer};
 use crate::layouts::*;
-use crate::matrix::Matrix;
+use crate::matrix::{Matrix, RowVectorD, ColumnVectorD};
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 
@@ -88,13 +88,24 @@ impl<Item: Scalar, L: BaseLayoutType>
     }
 }
 
-impl<Item: Scalar, L: VectorBaseLayoutType>
-    Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>
+impl<Item: Scalar>
+    RowVectorD<Item>
 {
     pub fn zeros_from_length(nelems: IndexType) -> Self {
         Self::from_data(
             VectorContainer::<Item>::new(nelems),
-            L::from_length(nelems),
+            RowVector::from_length(nelems),
+        )
+    }
+}
+
+impl<Item: Scalar>
+    ColumnVectorD<Item>
+{
+    pub fn zeros_from_length(nelems: IndexType) -> Self {
+        Self::from_data(
+            VectorContainer::<Item>::new(nelems),
+            ColumnVector::from_length(nelems),
         )
     }
 }

@@ -5,11 +5,12 @@ pub mod common_impl;
 pub mod constructors;
 //pub mod vector_impl;
 pub mod base_methods;
-pub mod random;
 pub mod matrix_slices;
+pub mod random;
 
 use crate::base_matrix::BaseMatrix;
 use crate::data_container::{ArrayContainer, DataContainer, VectorContainer};
+use crate::layouts::*;
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
 use crate::types::Scalar;
@@ -26,6 +27,12 @@ pub type GenericBaseMatrixMut<Item, L, Data, RS, CS> =
 
 pub type MatrixD<Item, L> =
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>;
+
+pub type ColumnVectorD<Item> =
+    GenericBaseMatrixMut<Item, ColumnVector, VectorContainer<Item>, Dynamic, Fixed1>;
+
+pub type RowVectorD<Item> =
+    GenericBaseMatrixMut<Item, RowVector, VectorContainer<Item>, Fixed1, Dynamic>;
 
 pub type Matrix22<Item, L> =
     Matrix<Item, BaseMatrix<Item, ArrayContainer<Item, 4>, L, Fixed2, Fixed2>, L, Fixed2, Fixed2>;
