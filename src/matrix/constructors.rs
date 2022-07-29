@@ -81,8 +81,9 @@ impl<Item: Scalar, L: BaseLayoutType>
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>
 {
     pub fn zeros_from_dim(rows: IndexType, cols: IndexType) -> Self {
+        let layout = L::from_dimension((rows, cols));
         Self::from_data(
-            VectorContainer::<Item>::new(rows * cols),
+            VectorContainer::<Item>::new(layout.number_of_elements()),
             L::from_dimension((rows, cols)),
         )
     }
@@ -109,31 +110,3 @@ impl<Item: Scalar>
         )
     }
 }
-
-// macro_rules! from_zeros_dynamic_vector {
-//     ($RS:ident, $CS:ident) => {
-//         impl<Item: Scalar>
-//             MatrixMut<
-//                 Item,
-//                 BaseMatrixMut<Item, VectorContainer<Item>, VLayout, $RS, $CS>,
-//                 VLayout,
-//                 $RS,
-//                 $CS,
-//             >
-//         {
-//             pub fn from_zeros(nelems: IndexType) -> Self {
-//                 let mut dim: (IndexType, IndexType) = (0, 0);
-//                 if $RS::N == 0 {
-//                     dim = (nelems, 1);
-//                 }
-//                 else {
-//                     dim = (1, nelems);
-//                 }
-//                 Self::from_data(VectorContainer::<Item>::new(nelems), dim)
-//             }
-//         }
-//     };
-// }
-
-// from_zeros_dynamic_vector!(Dynamic, Fixed1);
-// from_zeros_dynamic_vector!(Fixed1, Dynamic);

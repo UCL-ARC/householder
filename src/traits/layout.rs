@@ -12,6 +12,8 @@ pub trait VectorBaseLayoutType: BaseLayoutType {
 
 pub trait MatrixBaseLayoutType: BaseLayoutType {}
 
+pub trait StridedLayoutType: LayoutType {}
+
 pub trait LayoutType {
     type IndexLayout: BaseLayoutType;
 
@@ -29,6 +31,7 @@ pub trait LayoutType {
 
     fn index_layout(&self) -> Self::IndexLayout;
 }
+
 
 pub trait Layout {
     type Impl: LayoutType;
