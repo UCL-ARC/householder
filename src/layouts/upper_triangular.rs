@@ -33,6 +33,7 @@ impl LayoutType for UpperTriangular {
 
     #[inline]
     fn convert_2d_1d(&self, row: IndexType, col: IndexType) -> IndexType {
+        assert!(col >= row, "For upper triangular require 'col' >= 'row': row={}, col={}", row, col);
         ((self.dim - row) * (self.dim - row - 1)) / 2 + col - row
     }
 
