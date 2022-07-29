@@ -28,6 +28,14 @@ pub type GenericBaseMatrixMut<Item, L, Data, RS, CS> =
 pub type MatrixD<Item, L> =
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>;
 
+pub type UpperTriangularMatrix<Item> = Matrix<
+    Item,
+    BaseMatrix<Item, VectorContainer<Item>, UpperTriangular, Dynamic, Dynamic>,
+    UpperTriangular,
+    Dynamic,
+    Dynamic,
+>;
+
 pub type ColumnVectorD<Item> =
     GenericBaseMatrixMut<Item, ColumnVector, VectorContainer<Item>, Dynamic, Fixed1>;
 

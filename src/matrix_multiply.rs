@@ -18,9 +18,9 @@ pub trait Dot<Rhs> {
 
 pub trait MatMul<
     Item: Scalar,
-    L1: LayoutType,
-    L2: LayoutType,
-    L3: LayoutType,
+    L1: StridedLayoutType,
+    L2: StridedLayoutType,
+    L3: StridedLayoutType,
     Data1: DataContainer<Item = Item>,
     Data2: DataContainer<Item = Item>,
     Data3: DataContainerMut<Item = Item>,
@@ -44,8 +44,8 @@ pub trait MatMul<
 macro_rules! dot_impl {
     ($Scalar:ty) => {
         impl<
-                L1: LayoutType,
-                L2: LayoutType,
+                L1: StridedLayoutType,
+                L2: StridedLayoutType,
                 Data1: DataContainer<Item = $Scalar>,
                 Data2: DataContainer<Item = $Scalar>,
             >
@@ -106,9 +106,9 @@ macro_rules! matmul_impl {
     ($Scalar:ty, $Blas:ident, $RS1:ty, $CS1:ty, $RS2:ty, $CS2:ty, $RS3:ty, $CS3:ty, real) => {
 
         impl<
-        L1: LayoutType,
-        L2: LayoutType,
-        L3: LayoutType,
+        L1: StridedLayoutType,
+        L2: StridedLayoutType,
+        L3: StridedLayoutType,
         Data1: DataContainer<Item = $Scalar>,
         Data2: DataContainer<Item = $Scalar>,
         Data3: DataContainerMut<Item = $Scalar>
@@ -189,9 +189,9 @@ macro_rules! matmul_impl {
         ($Scalar:ty, $Blas:ident, $RS1:ty, $CS1:ty, $RS2:ty, $CS2:ty, $RS3:ty, $CS3:ty, complex) => {
 
             impl<
-            L1: LayoutType,
-            L2: LayoutType,
-            L3: LayoutType,
+            L1: StridedLayoutType,
+            L2: StridedLayoutType,
+            L3: StridedLayoutType,
             Data1: DataContainer<Item = $Scalar>,
             Data2: DataContainer<Item = $Scalar>,
             Data3: DataContainerMut<Item = $Scalar>
