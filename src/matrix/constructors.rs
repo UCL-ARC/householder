@@ -98,7 +98,7 @@ impl<Item: Scalar> ColumnVectorD<Item> {
 macro_rules! from_pointer_strided {
     ($RS:ident, $CS:ident, $L:ident) => {
         impl<'a, Item: Scalar> SliceMatrixMut<'a, Item, $L, $RS, $CS> {
-            pub unsafe fn from_pointer_mut(
+            pub unsafe fn from_pointer(
                 ptr: *mut Item,
                 dim: (IndexType, IndexType),
                 stride: (IndexType, IndexType),
@@ -132,7 +132,7 @@ macro_rules! from_pointer_strided {
 macro_rules! from_pointer {
     ($RS:ident, $CS:ident, $L:ident) => {
         impl<'a, Item: Scalar> SliceMatrixMut<'a, Item, $L, $RS, $CS> {
-            pub unsafe fn from_pointer_mut(ptr: *mut Item, dim: (IndexType, IndexType)) -> Self {
+            pub unsafe fn from_pointer(ptr: *mut Item, dim: (IndexType, IndexType)) -> Self {
                 let new_layout = $L::new(dim);
                 let nindices = dim.0 * dim.1;
                 let slice = std::slice::from_raw_parts_mut(ptr, nindices);
