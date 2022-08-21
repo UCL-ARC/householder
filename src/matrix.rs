@@ -9,7 +9,7 @@ pub mod matrix_slices;
 pub mod random;
 
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::{ArrayContainer, DataContainer, VectorContainer};
+use crate::data_container::{ArrayContainer, DataContainer, VectorContainer, SliceContainer, SliceContainerMut};
 use crate::layouts::*;
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
@@ -24,6 +24,13 @@ pub type GenericBaseMatrix<Item, L, Data, RS, CS> =
 
 pub type GenericBaseMatrixMut<Item, L, Data, RS, CS> =
     Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>;
+
+pub type SliceMatrix<'a, Item, L, RS, CS> =
+    Matrix<Item, BaseMatrix<Item, SliceContainer<'a, Item>, L, RS, CS>, L, RS, CS>;
+
+pub type SliceMatrixMut<'a, Item, L, RS, CS> =
+    Matrix<Item, BaseMatrix<Item, SliceContainerMut<'a, Item>, L, RS, CS>, L, RS, CS>;
+
 
 pub type MatrixD<Item, L> =
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>;

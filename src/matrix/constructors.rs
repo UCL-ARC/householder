@@ -1,9 +1,9 @@
 //! A collection of routines to construct matrix objects from scratch or existing data.
 
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::{ArrayContainer, VectorContainer};
+use crate::data_container::{ArrayContainer, SliceContainer, SliceContainerMut, VectorContainer};
 use crate::layouts::*;
-use crate::matrix::{Matrix, RowVectorD, ColumnVectorD};
+use crate::matrix::{ColumnVectorD, Matrix, RowVectorD, SliceMatrix, SliceMatrixMut};
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 
@@ -30,23 +30,13 @@ macro_rules! from_zeros_fixed {
     };
 }
 
-
 macro_rules! from_zeros_fixed_vector {
     ($RS:ident, $CS:ident, $L:ident, $N:expr) => {
         impl<Item: Scalar>
-            Matrix<
-                Item,
-                BaseMatrix<Item, ArrayContainer<Item, $N>, $L, $RS, $CS>,
-                $L,
-                $RS,
-                $CS,
-            >
+            Matrix<Item, BaseMatrix<Item, ArrayContainer<Item, $N>, $L, $RS, $CS>, $L, $RS, $CS>
         {
             pub fn zeros_from_length() -> Self {
-                Self::from_data(
-                    ArrayContainer::<Item, $N>::new(),
-                    $L::from_length($N),
-                )
+                Self::from_data(ArrayContainer::<Item, $N>::new(), $L::from_length($N))
             }
         }
     };
@@ -75,8 +65,6 @@ from_zeros_fixed_vector!(Fixed3, Fixed1, ColumnVector, 3);
 from_zeros_fixed_vector!(Fixed1, Fixed2, RowVector, 2);
 from_zeros_fixed_vector!(Fixed1, Fixed3, RowVector, 3);
 
-
-
 impl<Item: Scalar, L: BaseLayoutType>
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>
 {
@@ -89,9 +77,7 @@ impl<Item: Scalar, L: BaseLayoutType>
     }
 }
 
-impl<Item: Scalar>
-    RowVectorD<Item>
-{
+impl<Item: Scalar> RowVectorD<Item> {
     pub fn zeros_from_length(nelems: IndexType) -> Self {
         Self::from_data(
             VectorContainer::<Item>::new(nelems),
@@ -100,9 +86,7 @@ impl<Item: Scalar>
     }
 }
 
-impl<Item: Scalar>
-    ColumnVectorD<Item>
-{
+impl<Item: Scalar> ColumnVectorD<Item> {
     pub fn zeros_from_length(nelems: IndexType) -> Self {
         Self::from_data(
             VectorContainer::<Item>::new(nelems),
@@ -110,3 +94,68 @@ impl<Item: Scalar>
         )
     }
 }
+
+macro_rules! from_pointer_strided {
+    ($RS:ident, $CS:ident, $L:ident) => {
+        impl<'a, Item: Scalar> SliceMatrixMut<'a, Item, $L, $RS, $CS> {
+            pub unsafe fn from_pointer(
+                ptr: *mut Item,
+                dim: (IndexType, IndexType),
+                stride: (IndexType, IndexType),
+            ) -> Self {
+                let new_layout = $L::new(dim, stride);
+                let nindices = new_layout.convert_2d_raw(dim.0 - 1, dim.1 - 1) + 1;
+                let slice = std::slice::from_raw_parts_mut(ptr, nindices);
+                let data = SliceContainerMut::<'a, Item>::new(slice);
+
+                SliceMatrixMut::<'a, Item, $L, $RS, $CS>::from_data(data, new_layout)
+            }
+        }
+
+        impl<'a, Item: Scalar> SliceMatrix<'a, Item, $L, $RS, $CS> {
+            pub unsafe fn from_pointer(
+                ptr: *const Item,
+                dim: (IndexType, IndexType),
+                stride: (IndexType, IndexType),
+            ) -> Self {
+                let new_layout = $L::new(dim, stride);
+                let nindices = new_layout.convert_2d_raw(dim.0 - 1, dim.1 - 1) + 1;
+                let slice = std::slice::from_raw_parts(ptr, nindices);
+                let data = SliceContainer::<'a, Item>::new(slice);
+
+                SliceMatrix::<'a, Item, $L, $RS, $CS>::from_data(data, new_layout)
+            }
+        }
+    };
+}
+
+macro_rules! from_pointer {
+    ($RS:ident, $CS:ident, $L:ident) => {
+        impl<'a, Item: Scalar> SliceMatrixMut<'a, Item, $L, $RS, $CS> {
+            pub unsafe fn from_pointer(ptr: *mut Item, dim: (IndexType, IndexType)) -> Self {
+                let new_layout = $L::new(dim);
+                let nindices = dim.0 * dim.1;
+                let slice = std::slice::from_raw_parts_mut(ptr, nindices);
+                let data = SliceContainerMut::<'a, Item>::new(slice);
+
+                SliceMatrixMut::<'a, Item, $L, $RS, $CS>::from_data(data, new_layout)
+            }
+        }
+
+        impl<'a, Item: Scalar> SliceMatrix<'a, Item, $L, $RS, $CS> {
+            pub unsafe fn from_pointer(ptr: *const Item, dim: (IndexType, IndexType)) -> Self {
+                let new_layout = $L::new(dim);
+                let nindices = dim.0 * dim.1;
+                let slice = std::slice::from_raw_parts(ptr, nindices);
+                let data = SliceContainer::<'a, Item>::new(slice);
+
+                SliceMatrix::<'a, Item, $L, $RS, $CS>::from_data(data, new_layout)
+            }
+        }
+    };
+}
+
+from_pointer!(Dynamic, Dynamic, RowMajor);
+from_pointer!(Dynamic, Dynamic, ColumnMajor);
+from_pointer_strided!(Dynamic, Dynamic, ArbitraryStrideColumnMajor);
+from_pointer_strided!(Dynamic, Dynamic, ArbitraryStrideRowMajor);
