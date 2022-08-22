@@ -1,25 +1,54 @@
 //! Traits for random access of matrices
+//! 
+//! The traits in this module define safe and unsafe random access
+//! methods for a matrix. The user needs to implement `UnsafeRandomAccess`
+//! and `UnsafeRandomAccessMut` (for mutable access). The corresponding safe
+//! traits `SafeRandomAccess` and `SafeRandomAccessMut` are then auto-implemented.
+//! The safe traits check at runtime whether an index is out of bounds.
+//! 
+//! Each trait provides a two-dimensional and a one-dimensional access method,
+//! namely `get` and `get1d` (together with their mutable and unsafe variants).
+//! The two-dimensional access takes a row and a column and returns the corresponding
+//! matrix element. The one-dimensional access takes a single 
+//! 
+//! The one-dimensional access
+//! takes a single `index` parameter that iterates through the matrix elements.
+//! If also the [LayoutType](crate::traits::LayoutType) is implemented, it is
+//! recommended to use the [convert_1d_raw](crate::traits::LayoutType::convert_1d_raw)
+//! functions from that trait to implement `get1d` to ensure compatibility with
+//! the memory layout defined in that trait.
 
 use crate::types::{IndexType, Scalar};
 use crate::traits::{Layout, LayoutType};
 
-/// Random access without bounds check for matrices.
+
+/// This trait provides unsafe access to the underlying data. See 
+/// [Random Access](crate::traits::random_access) for a description.
 pub trait UnsafeRandomAccess {
     type Item: Scalar;
 
+    /// Return the element at position (`row`, `col`).
     unsafe fn get_unchecked(&self, row: IndexType, col: IndexType) -> Self::Item;
+
+    /// Return the element at position `index` in one-dimensional numbering.
     unsafe fn get1d_unchecked(&self, index: IndexType) -> Self::Item;
 }
 
-/// Get mutable access to element without bounds check.
+/// This trait provides unsafe mutable access to the underlying data. See 
+/// [Random Access](crate::traits::random_access) for a description.
 pub trait UnsafeRandomAccessMut {
     type Item: Scalar;
 
+    /// Return a mutable reference to the element at position (`row`, `col`).
     unsafe fn get_unchecked_mut(&mut self, row: IndexType, col: IndexType) -> &mut Self::Item;
+
+    /// Return a mutable reference at position `index` in one-dimensional numbering.
     unsafe fn get1d_unchecked_mut(&mut self, index: IndexType) -> &mut Self::Item;
 }
 
-/// Bounds checked random access for matrices.
+/// This trait provides bounds checked access to the underlying data. See 
+/// [Random Access](crate::traits::random_access) for a description. It depends
+/// on the [Layout](crate::traits::Layout) trait to obtain dimension information.
 pub trait RandomAccess: UnsafeRandomAccess + Layout {
     /// Get the element at position (row, col) of the matrix.
     fn get(&self, row: usize, col: usize) -> Self::Item;
