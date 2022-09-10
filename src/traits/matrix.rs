@@ -1,12 +1,23 @@
 //! Matrix trait
 //!
+//! [MatrixTrait] and its mutable counterpart [MatrixTraitMut] are
+//! traits that define a matrix. [MatrixTrait] is automatically implemented
+//! if the following traits are available.
+//! - [RandomAccess]. Provides an interface to access matrix elements.
+//! - [Layout]. Provides an interface to obtain layout information for the matrix.
+//! - [SizeType]. Specifies whether the row/column dimension is known at compile time
+//!               or specified at runtime.
+//! 
+//! [MatrixTraitMut] additionally depends on the trait [RandomAccessMut] to provide
+//! mutable access to matrix elements.
 use crate::traits::{
     LayoutType, Layout, RandomAccess, RandomAccessMut, SizeIdentifier,
     SizeType,
 };
 use crate::types::Scalar;
 
-/// Combined trait that summarizes basic matrix properties
+/// Combined trait for basic matrix properties. See [crate::traits::matrix]
+/// for details.
 pub trait MatrixTrait<
     Item: Scalar,
     L: LayoutType,
@@ -17,7 +28,7 @@ pub trait MatrixTrait<
 {
 }
 
-/// Combined trait for mutable matrices
+/// Combined trait for mutable matrices. See [crate::traits::matrix] for details.
 pub trait MatrixTraitMut<
     Item: Scalar,
     L: LayoutType,
