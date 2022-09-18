@@ -1,11 +1,16 @@
-//! Various useful tools
+//! Useful library tools.
 
 use crate::types::*;
 use rand::prelude::*;
 use rand_distr::Distribution;
 
-// Random number implementations for the scalar types
+/// This trait implements a simple convenient function to return random scalars
+/// from a given random number generator and distribution. For complex types the
+/// generator and distribution are separately applied to obtain the real and imaginary
+/// part of the random number.
 pub trait RandScalar: Scalar {
+    /// Returns a random number from a given random number generator `rng` and associated
+    /// distribution `dist`.
     fn random_scalar<R: Rng, D: Distribution<Self::Real>>(rng: &mut R, dist: &D) -> Self;
 }
 

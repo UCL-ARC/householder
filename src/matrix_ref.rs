@@ -1,10 +1,26 @@
-// A matrix that holds a reference to another matrix.
+//! A matrix that holds a reference to another matrix.
+//! 
+//! The type defined in this module translates a reference to a matrix into an owned matrix.
+//! Why is this necessary? Consider the code `let sum = mat1 + mat2` with `mat1` and `mat2`
+//! matrices. The result `sum` is an addition type that now owns `mat1` and `mat2`. But
+//! often we do not want `sum` to take ownership of the terms on the right hand side.
+//! So we want to write `let sum = &mat1 + &mat2`. But now the type that implements addition
+//! needs to hold references to matrices and cannot take ownership anymore. So we need to
+//! implement different addition types for each of the cases `mat1 + mat2`, `&mat1 + mat2`,
+//! `mat1 + &mat2`, `&mat2 + &mat2`. This would require significant code duplication. The
+//! solution is to create a type that turns a reference to a matrix into an owned matrix.
+//! This is what [MatrixRef] is doing. It simply takes a reference to a matrix and forwards
+//! all matrix operations to the reference. Hence, an expression of the form `&mat1 + mat2` will
+//! first be converted into an expression similar to `MatrixRef(&mat1) + mat2`, and then 
+//! both terms passed onto the addition type, which takes ownership of both terms.
 
 use crate::matrix::Matrix;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
 use std::marker::PhantomData;
 
+// A struct that implements [MatrixTrait] by holding a reference
+// to a matrix and forwarding all matrix operations to the held reference.
 pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
     &'a Matrix<Item, MatImpl, L, RS, CS>,
     PhantomData<Item>,

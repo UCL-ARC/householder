@@ -1,10 +1,16 @@
-//! Arbitrary stride column vector
+//! Column vector with arbitrary stride.
+//! 
+//! This layout describes a column vector with arbitrary
+//! stride. The stride vector is by definition of the form
+//! `(r, 1)` for this type, where `r` is the distance of two
+//! elements of the vector in memory.
 
 use crate::traits::*;
 use crate::types::IndexType;
 
 use super::*;
 
+/// A type that describes a column vector with arbitrary stride.
 pub struct ArbitraryStrideColumnVector {
     dim: IndexType,
     stride: IndexType,

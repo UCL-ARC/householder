@@ -1,7 +1,13 @@
-//! Column Major Layout
+//! Column major layout.
+//! 
+//! This layout describes a column major memory order
+//! with column major 1d indexing. For further information on memory layouts
+//! see [crate::traits::layout].
+
 use crate::traits::*;
 use crate::types::IndexType;
 
+/// A type that describes a matrix in column major format.
 pub struct ColumnMajor {
     dim: (IndexType, IndexType),
 }

@@ -1,8 +1,12 @@
-//! Row vector layout
+//! Row vector layout.
+//! 
+//! This layout describes a row vector whose elements
+//! are in consecutive order in memory.
 
 use crate::traits::*;
 use crate::types::IndexType;
 
+/// A type that describes a row vector with consecutive elements.
 pub struct RowVector {
     dim: IndexType,
 }

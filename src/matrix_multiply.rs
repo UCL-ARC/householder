@@ -1,4 +1,17 @@
-//! Implementation of matrix multiplication
+//! Implementation of matrix multiplication.
+//! 
+//! This module implements the matrix multiplication. The current implementation
+//! uses the [matrixmultiply] crate. To implement with this crate two traits are
+//! provided. A low-level trait [MatMul] matmul provides the method 
+//! [matmul](MatMul::matmul), which
+//! performs `mat_c = alpha * mat_a * mat_b + beta * mat_c`, where `*` is to be
+//! understood as matrix multipolitcation. A higher level [Dot] trait implements
+//! the operation `mat_c = mat_a.dot(&mat_b)`. The latter allocates new memory,
+//! while the former relies on suitable memory being allocated.
+//! 
+//! The [MatMul] trait is currently implemented for the product of two dynamic matrices,
+//! the product of a dynamic matrix with a vector, and the product of a row vector
+//! with a dynamic matrix.
 
 use crate::base_matrix::BaseMatrix;
 use crate::data_container::{DataContainer, DataContainerMut, VectorContainer};
@@ -10,12 +23,17 @@ use cauchy::{c32, c64, Scalar};
 use matrixmultiply::{cgemm, dgemm, sgemm, zgemm, CGemmOption};
 use num;
 
+/// This trait provides a high-level interface for the multiplication of a matrix
+/// with another matrix. The result is a new matrix, hence memory allocation takes place.
 pub trait Dot<Rhs> {
     type Output;
 
+    /// Return the matrix product with a right-hand side.
     fn dot(&self, rhs: &Rhs) -> Self::Output;
 }
 
+
+/// This trait is an interface for the `dgemm` operation `mat_c = alpha * mat_a * mat_b + beta * mat_c`.
 pub trait MatMul<
     Item: Scalar,
     L1: StridedLayoutType,
@@ -32,6 +50,7 @@ pub trait MatMul<
     CS3: SizeIdentifier,
 >
 {
+    /// Perform the operation `mat_c = alpha * mat_a * mat_b + beta * mat_c`.
     fn matmul(
         alpha: Item,
         mat_a: &GenericBaseMatrix<Item, L1, Data1, RS1, CS1>,

@@ -1,17 +1,27 @@
 //! Multiplication of a matrix with a scalar
+//! 
+//! This module implements the multiplication of a matrix with a scalar. Instead
+//! of immediately executing the product a new matrix is created whose implementation
+//! is a struct that holds the original operator and the scalar. On element access the
+//! multiplication is performed.
+
 use crate::matrix::*;
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
 use crate::types::{c32, c64, IndexType, Scalar};
 use std::marker::PhantomData;
 
+/// This type represents the multiplication of a matrix with a scalar.
 pub type ScalarProdMat<Item, MatImpl, L, RS, CS> =
-    Matrix<Item, ScalarMult<Item, MatImpl, L, RS, CS>, <L as LayoutType>::IndexLayout, RS, CS>;
+    Matrix<Item, ScalarMult<Item, MatImpl, L, RS, CS>, L, RS, CS>;
 
+/// A structure holding a reference to the matrix and the scalar to be multiplied
+/// with it. This struct implements [MatrixTrait] and acts like a matrix.
+/// However, random access returns the corresponding matrix entry multiplied with
+/// the scalar.
 pub struct ScalarMult<Item, MatImpl, L, RS, CS>(
     Matrix<Item, MatImpl, L, RS, CS>,
     Item,
-    L::IndexLayout,
     PhantomData<Item>,
     PhantomData<L>,
     PhantomData<RS>,
@@ -33,11 +43,9 @@ impl<
     > ScalarMult<Item, MatImpl, L, RS, CS>
 {
     pub fn new(mat: Matrix<Item, MatImpl, L, RS, CS>, scalar: Item) -> Self {
-        let layout = mat.layout().index_layout();
         Self(
             mat,
             scalar,
-            layout,
             PhantomData,
             PhantomData,
             PhantomData,
@@ -66,11 +74,11 @@ impl<
         CS: SizeIdentifier,
     > Layout for ScalarMult<Item, MatImpl, L, RS, CS>
 {
-    type Impl = L::IndexLayout;
+    type Impl = L;
 
     #[inline]
     fn layout(&self) -> &Self::Impl {
-        &self.2
+        self.0.layout()
     }
 }
 

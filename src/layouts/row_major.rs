@@ -1,8 +1,13 @@
-//! Row major layout
+//! Row major layout.
+//! 
+//! This layout describes a row major memory order
+//! with row major 1d indexing. For further information on memory layouts
+//! see [crate::traits::layout].
 
 use crate::traits::*;
 use crate::types::IndexType;
 
+/// A type that describes a matrix in row major format.
 pub struct RowMajor {
     dim: (IndexType, IndexType),
 }

@@ -1,8 +1,13 @@
-//! Upper triangular layout
+//! Upper triangular layout.
+//! 
+//! This is a special layout for upper triangular matrices
+//! whose elemenst are consecutively ordered in memory without
+//! storing the zero lower triangular elements.
 
 use crate::traits::*;
 use crate::types::IndexType;
 
+/// A type that describes upper triangular matrices.
 pub struct UpperTriangular {
     dim: IndexType,
 }

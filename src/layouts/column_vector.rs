@@ -1,8 +1,12 @@
-//! Column vector layout
+//! Column vector layout.
+//! 
+//! This layout describes a column vector whose elements
+//! are in consecutive order in memory.
 
 use crate::traits::*;
 use crate::types::IndexType;
 
+/// A type that describes a column vector with consecutive elements.
 pub struct ColumnVector {
     dim: IndexType,
 }

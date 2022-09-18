@@ -1,10 +1,15 @@
-//! Column major layout
+//! Column major layout with arbitrary stride.
+//! 
+//! This layout uses an arbitrary stride in memory with 1d indexing
+//! in column major order. For further information on memory layouts
+//! see [crate::traits::layout].
 
 use crate::traits::*;
 use crate::types::IndexType;
 
 use super::*;
 
+/// A type that describes a matrix with arbitrary stride and column major indexing.
 pub struct ArbitraryStrideColumnMajor {
     dim: (IndexType, IndexType),
     stride: (IndexType, IndexType),

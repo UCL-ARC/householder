@@ -1,4 +1,8 @@
-//! Definition of typical memory layouts
+//! This module combines different concrete memory layout types.
+//! 
+//! Memory layouts implement the [LayoutType](crate::traits::LayoutType) trait
+//! and describe iteration order of matrix elements and their map to memory
+//! locations.
 
 pub mod row_major;
 pub mod column_major;
