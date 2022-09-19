@@ -20,6 +20,7 @@ macro_rules! from_zeros_fixed {
                 $CS,
             >
         {
+            /// Create a new fixed dimension matrix.
             pub fn zeros_from_dim() -> Self {
                 Self::from_data(
                     ArrayContainer::<Item, { $RS::N * $CS::N }>::new(),
@@ -35,6 +36,7 @@ macro_rules! from_zeros_fixed_vector {
         impl<Item: Scalar>
             Matrix<Item, BaseMatrix<Item, ArrayContainer<Item, $N>, $L, $RS, $CS>, $L, $RS, $CS>
         {
+            /// Create a new fixed length vector.
             pub fn zeros_from_length() -> Self {
                 Self::from_data(ArrayContainer::<Item, $N>::new(), $L::from_length($N))
             }
@@ -68,6 +70,7 @@ from_zeros_fixed_vector!(Fixed1, Fixed3, RowVector, 3);
 impl<Item: Scalar, L: BaseLayoutType>
     Matrix<Item, BaseMatrix<Item, VectorContainer<Item>, L, Dynamic, Dynamic>, L, Dynamic, Dynamic>
 {
+    /// Create a new zero matrix with given number of rows and columns.
     pub fn zeros_from_dim(rows: IndexType, cols: IndexType) -> Self {
         let layout = L::from_dimension((rows, cols));
         Self::from_data(
@@ -78,19 +81,49 @@ impl<Item: Scalar, L: BaseLayoutType>
 }
 
 impl<Item: Scalar> RowVectorD<Item> {
+    /// Create a new zero row vector with given number of elements.
     pub fn zeros_from_length(nelems: IndexType) -> Self {
         Self::from_data(
             VectorContainer::<Item>::new(nelems),
             RowVector::from_length(nelems),
         )
     }
+    /// Create a new zero row vector by providing full dimension.
+    ///
+    /// This routine ensures compatibility to matrix constructors.
+    pub fn zeros_from_dim(rows: usize, cols: usize) -> Self {
+        assert_eq!(
+            rows, 1,
+            "Number of rows is {} but must be 1 for row vectors.",
+            rows
+        );
+        Self::from_data(
+            VectorContainer::<Item>::new(cols),
+            RowVector::from_length(cols),
+        )
+    }
 }
 
 impl<Item: Scalar> ColumnVectorD<Item> {
+    /// Create a new zero column vector with given number of elements.
     pub fn zeros_from_length(nelems: IndexType) -> Self {
         Self::from_data(
             VectorContainer::<Item>::new(nelems),
             ColumnVector::from_length(nelems),
+        )
+    }
+    /// Create a new zero column vector by providing full dimension.
+    ///
+    /// This routine ensures compatibility to matrix constructors.
+    pub fn zeros_from_dim(rows: usize, cols: usize) -> Self {
+        assert_eq!(
+            cols, 1,
+            "Number of columns is {} but must be 1 for column vectors.",
+            cols
+        );
+        Self::from_data(
+            VectorContainer::<Item>::new(rows),
+            ColumnVector::from_length(rows),
         )
     }
 }
@@ -98,6 +131,7 @@ impl<Item: Scalar> ColumnVectorD<Item> {
 macro_rules! from_pointer_strided {
     ($RS:ident, $CS:ident, $L:ident) => {
         impl<'a, Item: Scalar> SliceMatrixMut<'a, Item, $L, $RS, $CS> {
+            /// Create a new mutable matrix by specifying a pointer, dimension and stride tuple.
             pub unsafe fn from_pointer(
                 ptr: *mut Item,
                 dim: (IndexType, IndexType),
@@ -113,6 +147,7 @@ macro_rules! from_pointer_strided {
         }
 
         impl<'a, Item: Scalar> SliceMatrix<'a, Item, $L, $RS, $CS> {
+            /// Create a new matrix by specifying a pointer, dimension and stride tuple.
             pub unsafe fn from_pointer(
                 ptr: *const Item,
                 dim: (IndexType, IndexType),
@@ -132,6 +167,7 @@ macro_rules! from_pointer_strided {
 macro_rules! from_pointer {
     ($RS:ident, $CS:ident, $L:ident) => {
         impl<'a, Item: Scalar> SliceMatrixMut<'a, Item, $L, $RS, $CS> {
+            /// Create a new mutable matrix from a given pointer and dimension.
             pub unsafe fn from_pointer(ptr: *mut Item, dim: (IndexType, IndexType)) -> Self {
                 let new_layout = $L::new(dim);
                 let nindices = dim.0 * dim.1;
@@ -143,6 +179,7 @@ macro_rules! from_pointer {
         }
 
         impl<'a, Item: Scalar> SliceMatrix<'a, Item, $L, $RS, $CS> {
+            /// Create a new matrix from a given pointer and dimension.
             pub unsafe fn from_pointer(ptr: *const Item, dim: (IndexType, IndexType)) -> Self {
                 let new_layout = $L::new(dim);
                 let nindices = dim.0 * dim.1;

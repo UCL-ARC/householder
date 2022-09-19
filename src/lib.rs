@@ -30,20 +30,24 @@
 //! - [Basic trait definitions](crate::traits)
 //! - [Matrix storage layouts](crate::layouts)
 //! - [The Matrix type](crate::matrix)
-//! - Examples
+//! - [Examples](crate::examples)
 
 pub mod data_container;
 pub mod types;
 pub mod traits;
 pub mod layouts;
+pub mod tools;
+pub mod matrix;
+pub mod macros;
+pub mod examples;
 
 
 pub mod base_matrix;
-pub mod matrix;
 pub mod matrix_ref;
 pub mod scalar_mult;
-pub mod addition;
-pub mod tools;
 pub mod matrix_multiply;
+pub mod addition;
+pub mod global;
 
 pub use cauchy::Scalar;
+pub use global::*;

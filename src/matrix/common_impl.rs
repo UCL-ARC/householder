@@ -1,7 +1,5 @@
-//! Implementation of matrix traits and methods
+//! Implementation of common matrix traits and methods.
 
-use crate::base_matrix::BaseMatrix;
-use crate::data_container::{DataContainer, DataContainerMut};
 use crate::matrix::{Matrix, MatrixD};
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
@@ -74,21 +72,54 @@ impl<
     }
 }
 
-impl<Item: Scalar,
-    L: LayoutType,
-    MatImpl: MatrixTrait<Item, L, Dynamic, Dynamic>> Matrix<Item, MatImpl, L, Dynamic, Dynamic>
-    {
-        pub fn eval(&self) -> MatrixD<Item, <L as LayoutType>::IndexLayout> {
-            let dim = self.layout().dim();
-            let mut result = MatrixD::<Item, <L as LayoutType>::IndexLayout>::zeros_from_dim(dim.0, dim.1);
-            unsafe {
-                for index in 0..self.layout().number_of_elements() {
-                    *result.get1d_unchecked_mut(index) = self.get1d_unchecked(index);
-                }
+impl<Item: Scalar, L: LayoutType, MatImpl: MatrixTrait<Item, L, Dynamic, Dynamic>>
+    Matrix<Item, MatImpl, L, Dynamic, Dynamic>
+{
+    /// Evaluate into a new matrix.
+    pub fn eval(&self) -> MatrixD<Item, <L as LayoutType>::IndexLayout> {
+        let dim = self.layout().dim();
+        let mut result =
+            MatrixD::<Item, <L as LayoutType>::IndexLayout>::zeros_from_dim(dim.0, dim.1);
+        unsafe {
+            for index in 0..self.layout().number_of_elements() {
+                *result.get1d_unchecked_mut(index) = self.get1d_unchecked(index);
             }
-            result
         }
+        result
     }
+}
+
+impl<
+        Item: Scalar,
+        L: LayoutType,
+        MatImpl: MatrixTrait<Item, L, RS, CS>,
+        RS: SizeIdentifier,
+        CS: SizeIdentifier,
+    > Matrix<Item, MatImpl, L, RS, CS>
+{
+    /// Return dimension of the matrix.
+    pub fn dim(&self) -> (IndexType, IndexType) {
+        self.layout().dim()
+    }
+}
+
+impl<Item: Scalar, L: LayoutType, MatImpl: MatrixTrait<Item, L, Fixed1, Dynamic>>
+    Matrix<Item, MatImpl, L, Fixed1, Dynamic>
+{
+    /// Return length of a vector.
+    pub fn length(&self) -> IndexType {
+        self.layout().dim().1
+    }
+}
+
+impl<Item: Scalar, L: LayoutType, MatImpl: MatrixTrait<Item, L, Dynamic, Fixed1>>
+    Matrix<Item, MatImpl, L, Dynamic, Fixed1>
+{
+    /// Return length of a vector.
+    pub fn length(&self) -> IndexType {
+        self.layout().dim().0
+    }
+}
 
 // macro_rules! eval_dynamic_matrix {
 //     ($L:ident) => {
@@ -149,41 +180,3 @@ impl<Item: Scalar,
 // eval_fixed_matrix!(FLayout, Fixed3, Fixed2);
 // eval_fixed_matrix!(FLayout, Fixed2, Fixed3);
 // eval_fixed_matrix!(FLayout, Fixed3, Fixed3);
-
-impl<
-        Item: Scalar,
-        Data: DataContainer<Item = Item>,
-        L: LayoutType,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>
-{
-    #[inline]
-    pub fn get_pointer(&self) -> *const Item {
-        self.0.get_pointer()
-    }
-
-    #[inline]
-    pub fn get_slice(&self, first: IndexType, last: IndexType) -> &[Item] {
-        self.0.get_slice(first, last)
-    }
-}
-
-impl<
-        Item: Scalar,
-        Data: DataContainerMut<Item = Item>,
-        L: LayoutType,
-        RS: SizeIdentifier,
-        CS: SizeIdentifier,
-    > Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>
-{
-    #[inline]
-    pub fn get_pointer_mut(&mut self) -> *mut Item {
-        self.0.get_pointer_mut()
-    }
-
-    #[inline]
-    pub fn get_slice_mut(&mut self, first: IndexType, last: IndexType) -> &mut [Item] {
-        self.0.get_slice_mut(first, last)
-    }
-}

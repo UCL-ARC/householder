@@ -1,8 +1,8 @@
-//! Slice operations for matrices
+//! Creation of subblocks of matrices.
 
-use super::{GenericBaseMatrix, GenericBaseMatrixMut, Matrix, SliceMatrix, SliceMatrixMut};
+use super::{GenericBaseMatrixMut, Matrix, SliceMatrix, SliceMatrixMut};
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::{DataContainer, DataContainerMut, SliceContainer, SliceContainerMut};
+use crate::data_container::{DataContainer, DataContainerMut};
 use crate::layouts::*;
 use crate::traits::*;
 use crate::types::{IndexType, Scalar};
@@ -12,6 +12,10 @@ macro_rules! block_matrix {
         impl<Item: Scalar, Data: DataContainer<Item = Item>>
             Matrix<Item, BaseMatrix<Item, Data, $Layout, $RS, $CS>, $Layout, $RS, $CS>
         {
+            /// Return a new matrix that is a subblock of another matrix.
+            ///
+            /// The block is specified by giving the (row, column) index of the
+            /// top-left element of the block and its dimension.
             pub fn block<'a>(
                 &'a self,
                 top_left: (IndexType, IndexType),
@@ -37,6 +41,10 @@ macro_rules! block_matrix {
         impl<Item: Scalar, Data: DataContainerMut<Item = Item>>
             Matrix<Item, BaseMatrix<Item, Data, $Layout, $RS, $CS>, $Layout, $RS, $CS>
         {
+            /// Return a new matrix that is a mutable subblock of another matrix.
+            ///
+            /// The block is specified by giving the (row, column) index of the
+            /// top-left element of the block and its dimension.
             pub fn block_mut<'a>(
                 &'a mut self,
                 top_left: (IndexType, IndexType),
@@ -68,7 +76,17 @@ macro_rules! subdivide_matrix {
         impl<Item: Scalar, Data: DataContainerMut<Item = Item>>
             GenericBaseMatrixMut<Item, $Layout, Data, Dynamic, Dynamic>
         {
-            pub fn split_in_four<'a>(
+            /// Split a mutable matrix into four mutable subblocks.
+            ///
+            /// This method splits the matrix into 4 blocks according to the
+            /// following pattern.
+            ///
+            /// |0|1|
+            /// |2|3|
+            ///
+            /// The first block starts at position (0, 0). The last block
+            /// starts at the position given by the tuple `split_at`.
+            pub fn split_in_four_mut<'a>(
                 &'a mut self,
                 split_at: (usize, usize),
             ) -> (
@@ -147,6 +165,7 @@ mod test {
 
     use super::*;
     use crate::matrix::*;
+    use crate::rand_mat;
 
     #[test]
     fn test_simple_slice() {
@@ -173,30 +192,15 @@ mod test {
 
     #[test]
     fn test_disjoint_slices() {
-        let mut mat = MatrixD::<f64, RowMajor>::zeros_from_dim(4, 5);
-        *mat.get_mut(1, 1) = 1.0;
-        *mat.get_mut(0, 2) = 2.0;
-
-        let (mut slice1, mut slice2, mut slice3, mut slice4) = mat.split_in_four((2, 3));
-
-        *slice1.get_mut(0, 0) = 2.0;
-        *slice2.get_mut(0, 0) = 3.0;
-
-        // unsafe {
-        //     let ptr1 = mat.get_pointer_mut();
-        //     let ptr2 = mat.get_pointer_mut();
-
-        //     let slice1 = std::slice::from_raw_parts_mut(ptr1, 2);
-        //     let slice2 = std::slice::from_raw_parts_mut(ptr2, 3);
-
-        //     // let slice1 = mat.block_mut((0, 0), (3, 2));
-        //     // let slice2 = mat.block_mut((0, 2), (3, 2));
-
-        //     *slice1.get_mut(0).unwrap() = 1.0;
-        //     *slice2.get_mut(1).unwrap() = 2.0;
-
-        //     assert_eq!(*slice1.get_mut(0).unwrap(), 1.0 as f64);
-        //     assert_eq!(*slice2.get_mut(1).unwrap(), 2.0 as f64);
-        // }
+        let mut mat = rand_mat![f64, (10, 10)];
+        let (mut m1, mut m2, mut m3, mut m4) = mat.split_in_four_mut((5, 5));
+        *m1.get_mut(1, 0) = 2.0;
+        *m2.get_mut(3, 4) = 3.0;
+        *m3.get_mut(2, 1) = 4.0;
+        *m4.get_mut(4, 2) = 5.0;
+        assert_eq!(mat.get(1, 0), 2.0);
+        assert_eq!(mat.get(3, 9), 3.0);
+        assert_eq!(mat.get(7, 1), 4.0);
+        assert_eq!(mat.get(9, 7), 5.0);
     }
 }

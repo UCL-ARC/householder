@@ -18,6 +18,7 @@ macro_rules! rand_impl {
                 Data: DataContainerMut<Item = $Scalar>,
             > GenericBaseMatrixMut<$Scalar, L, Data, RS, CS>
         {
+            /// Fill a matrix with normally distributed random numbers.
             pub fn fill_from_rand_standard_normal<R: Rng>(&mut self, rng: &mut R) {
                 let dist = StandardNormal;
                 self.for_each(|val| *val = <$Scalar>::random_scalar(rng, &dist));

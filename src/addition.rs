@@ -1,4 +1,8 @@
-//! Addition of two matrices
+//! Addition of two matrices.
+//! 
+//! This module defines a type [AdditionMat] that represents the addition of two
+//! matrices. Two matrices can be added together if they have the same dimension and
+//! same index layout, meaning a 1d indexing traverses both matrices in the same order.
 
 use crate::matrix::*;
 use crate::matrix_ref::MatrixRef;
@@ -6,6 +10,7 @@ use crate::traits::*;
 use cauchy::Scalar;
 use std::marker::PhantomData;
 
+/// A type that represents the sum of two matrices.
 pub type AdditionMat<Item, MatImpl1, MatImpl2, B, L1, L2, RS, CS> =
     Matrix<Item, Addition<Item, MatImpl1, MatImpl2, B, L1, L2, RS, CS>, B, RS, CS>;
 
