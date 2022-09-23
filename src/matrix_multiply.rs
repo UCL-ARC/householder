@@ -507,16 +507,16 @@ mod test {
 
     matmul_test!(f32, test_matmul_f32);
     matmul_test!(f64, test_matmul_f64);
-    // matmul_test!(c32, test_matmul_c32);
-    // matmul_test!(c64, test_matmul_c64);
+    matmul_test!(c32, test_matmul_c32);
+    matmul_test!(c64, test_matmul_c64);
 
     row_matvec_test!(f32, test_row_matvec_f32);
     row_matvec_test!(f64, test_row_matvec_f64);
-    // row_matvec_test!(c32, test_row_matvec_c32);
-    // row_matvec_test!(c64, test_row_matvec_c64);
+    row_matvec_test!(c32, test_row_matvec_c32);
+    row_matvec_test!(c64, test_row_matvec_c64);
 
     col_matvec_test!(f64, test_col_matvec_f64);
     col_matvec_test!(f32, test_col_matvec_f32);
-    // col_matvec_test!(c32, test_col_matvec_c32);
-    // col_matvec_test!(c64, test_col_matvec_c64);
+    col_matvec_test!(c32, test_col_matvec_c32);
+    col_matvec_test!(c64, test_col_matvec_c64);
 }
