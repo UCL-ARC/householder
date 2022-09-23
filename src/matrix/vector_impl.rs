@@ -6,11 +6,11 @@ use crate::matrix::Matrix;
 use crate::data_container::{ArrayContainer, VectorContainer, DataContainer};
 use crate::traits::*;
 use crate::layouts::*;
-use crate::types::{IndexType, Scalar};
+use crate::types::{IndexType, HScalar};
 
 macro_rules! vec_dynamic {
     ($MatrixType:ident, $BaseType:ident, $Layout:ident, $RS:ident, $CS:ident) => {
-        impl<Item: Scalar>
+        impl<Item: HScalar>
             $MatrixType<
                 Item,
                 $BaseType<Item, VectorContainer<Item>, $Layout, $RS, $CS>,
@@ -38,7 +38,7 @@ macro_rules! vec_dynamic {
 
 macro_rules! vec_fixed {
     ($MatrixType:ident, $BaseType:ident, $Layout:ident, $RS:ident, $CS:ident, $N:expr) => {
-        impl<Item: Scalar>
+        impl<Item: HScalar>
             $MatrixType<
                 Item,
                 $BaseType<Item, ArrayContainer<Item, $N>, $Layout, $RS, $CS>,
@@ -74,7 +74,7 @@ vec_fixed!(Matrix, BaseMatrix, RowMajor, Fixed1, Fixed2, 2);
 vec_fixed!(Matrix, BaseMatrix, RowMajor, Fixed1, Fixed3, 2);
 
 
-impl<Item: Scalar, Data: DataContainer<Item=Item>, RS: SizeIdentifier, CS: SizeIdentifier>
+impl<Item: HScalar, Data: DataContainer<Item=Item>, RS: SizeIdentifier, CS: SizeIdentifier>
     Matrix<Item, BaseMatrix<Item, Data, VLayout, RS, CS>, VLayout, RS, CS> {
         pub fn length(&self) -> IndexType {
             self.0.length()

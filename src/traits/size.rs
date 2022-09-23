@@ -8,14 +8,13 @@
 //! be types that implement the [SizeIdentifier] trait. A [SizeIdentifier] has an associated
 //! [usize] constant [SizeIdentifier::N] that gives compile time information on the actual
 //! size. The following data types are implemented that have size types
-//! 
+//!
 //! - [Fixed1]. This type specifies a row/column of fixed dimension 1.
 //! - [Fixed2]. This type specifies a row/column of fixed dimension 2.
 //! - [Fixed3]. This type specifies a row/column of fixed dimension 3.
 //! - [Dynamic]. This type specifies a row/column dimension defined at runtime.
 //!             The corresponding constant [SizeIdentifier::N] is set to 0.
-//! 
-
+//!
 
 /// Fixed Dimension 1.
 pub struct Fixed1;
@@ -39,14 +38,13 @@ pub trait SizeIdentifier {
 
 impl SizeIdentifier for Fixed1 {
     const N: usize = 1;
-
 }
 
 impl SizeIdentifier for Fixed2 {
     const N: usize = 2;
 }
 impl SizeIdentifier for Fixed3 {
-    const N: usize= 3;
+    const N: usize = 3;
 }
 impl SizeIdentifier for Dynamic {
     const N: usize = 0;
@@ -59,4 +57,3 @@ pub trait SizeType {
     type R: SizeIdentifier;
     type C: SizeIdentifier;
 }
-

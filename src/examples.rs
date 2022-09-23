@@ -1,17 +1,17 @@
 //! Common Examples
-//! 
+//!
 //! # Defining matrices and vectors
-//! 
+//!
 //! We can define a simple 3 x 5 matrix with `f64` entries
 //! as follows.
-//! 
+//!
 //! ```
 //! # use householder::*;
 //! let mut mat = mat![f64, (3, 5)];
 //! ```
 //! The result is a row-major matrix. To define a column-major
 //! matrix we use
-//! 
+//!
 //! ```
 //! # use householder::*;
 //! let mut mat = mat![f64, (3, 5), ColumnMajor];
@@ -21,13 +21,13 @@
 //! # use householder::*;
 //! let mut vec = vector![f64, 5];
 //! ```
-//! 
+//!
 //! For a row vector use
 //! ```
 //! # use householder::*;
 //! let mut vec = vector![f64, 5, RowVector];
 //! ```
-//! 
+//!
 //! A normally distributed random matrix is obtained as
 //! ```
 //! # use householder::*;
@@ -41,7 +41,7 @@
 //! mat.fill_from_rand_standard_normal(&mut rng);
 //! ```
 //! # Accessing entries
-//! 
+//!
 //! We can access and modify entries of a matrix
 //! with bounds checks in the following way.
 //! ```
@@ -59,7 +59,7 @@
 //! let mut mat = mat![f64, (3, 5)];
 //! *mat.get_mut(3, 5) = 4.0;
 //! ```
-//! 
+//!
 //! ```should_panic
 //! # use householder::*;
 //! let mut mat = mat![f64, (3, 5)];
@@ -76,7 +76,7 @@
 //! }
 //! ```
 //! # Operations on matrices and vectors.
-//! 
+//!
 //! Matrix/vector sums or products with a scalar are written as
 //! ```
 //! # use householder::*;
@@ -92,7 +92,7 @@
 //! The `eval` statement instantiates a new matrix and then iterates
 //! through the new matrix to componentwise fill up the matrix with
 //! the result of the right-hand side componentwise operation.
-//! 
+//!
 //! Matrix/vector and matrix/matrix products are implemented via
 //! the [matrixmultiply] crate.
 //! ```
@@ -104,7 +104,7 @@
 //! let res2 = row_vec.dot(&mat);
 //! ```
 //! # Access to submatrices.
-//! 
+//!
 //! We can access a single subblock of a matrix as follows.
 //! ```
 //! # use householder::*;

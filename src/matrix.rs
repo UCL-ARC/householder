@@ -7,7 +7,7 @@
 //! types of implementations. The only condition is that the implementation itself
 //! implements [MatrixTrait] or [MatrixTraitMut].
 //! A matrix is generic over the following parameters:
-//! - `Item`. Implements the [Scalar] trait and represents the underlying scalar type
+//! - `Item`. Implements the [HScalar] trait and represents the underlying scalar type
 //!           of the matrix.
 //! - `MatImpl`. he actual implementation of the matrix. It must itself implement the
 //!              trait [MatrixTrait] or [MatrixTraitMut] depending on wheter mutable access
@@ -17,20 +17,22 @@
 //! - `RS`. A type that implements [SizeType] and specifies whether the row dimension is known
 //!         at compile time or dynamically at runtime.
 //! - `CS`. A type that implements [SizeType]  and specifies whether the column dimension is
-//!         known at compile time or dynamically at runtime. 
+//!         known at compile time or dynamically at runtime.
 
+pub mod base_methods;
 pub mod common_impl;
 pub mod constructors;
-pub mod base_methods;
 pub mod matrix_slices;
 pub mod random;
 
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::{ArrayContainer, DataContainer, VectorContainer, SliceContainer, SliceContainerMut};
+use crate::data_container::{
+    ArrayContainer, DataContainer, SliceContainer, SliceContainerMut, VectorContainer,
+};
 use crate::layouts::*;
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
-use crate::types::Scalar;
+use crate::types::HScalar;
 use std::marker::PhantomData;
 
 /// A [RefMat] is a matrix whose implementation is a reference to another matrix.
@@ -106,14 +108,14 @@ pub struct Matrix<Item, MatImpl, L, RS, CS>(
     PhantomData<CS>,
 )
 where
-    Item: Scalar,
+    Item: HScalar,
     L: LayoutType,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
     MatImpl: MatrixTrait<Item, L, RS, CS>;
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
@@ -132,7 +134,7 @@ impl<
 }
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
