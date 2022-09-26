@@ -37,14 +37,14 @@ impl HScalar for f64 {
 impl HScalar for c32 {
     type Real = f32;
 
-    fn atan2(self, x: c32) -> c32 {
+    fn atan2(self, _x: c32) -> c32 {
         unimplemented!("atan2 is not defined for complex numbers");
     }
 }
 
 impl HScalar for c64 {
     type Real = f64;
-    fn atan2(self, x: c64) -> c64 {
+    fn atan2(self, _x: c64) -> c64 {
         unimplemented!("atan2 is not defined for complex numbers");
     }
 }
