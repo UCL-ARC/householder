@@ -35,9 +35,7 @@ pub trait DataContainer {
             self.number_of_elements()
         );
 
-        unsafe {
-            std::slice::from_raw_parts(self.get_pointer().add(first), last - first)
-        }
+        unsafe { std::slice::from_raw_parts(self.get_pointer().add(first), last - first) }
     }
 
     /// Return the number of elements in the container.
@@ -74,12 +72,7 @@ pub trait DataContainerMut: DataContainer {
             self.number_of_elements()
         );
 
-        unsafe {
-            std::slice::from_raw_parts_mut(
-                self.get_pointer_mut().add(first),
-                last - first,
-            )
-        }
+        unsafe { std::slice::from_raw_parts_mut(self.get_pointer_mut().add(first), last - first) }
     }
 }
 
