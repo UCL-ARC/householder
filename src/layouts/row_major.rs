@@ -1,5 +1,5 @@
 //! Row major layout.
-//! 
+//!
 //! This layout describes a row major memory order
 //! with row major 1d indexing. For further information on memory layouts
 //! see [crate::traits::layout].

@@ -1,5 +1,5 @@
 //! Row vector layout.
-//! 
+//!
 //! This layout describes a row vector whose elements
 //! are in consecutive order in memory.
 

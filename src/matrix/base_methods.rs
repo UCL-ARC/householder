@@ -6,10 +6,10 @@ use crate::data_container::{DataContainer, DataContainerMut};
 use crate::traits::*;
 use crate::types::*;
 
-use super::{GenericBaseMatrixMut, GenericBaseMatrix};
+use super::{GenericBaseMatrix, GenericBaseMatrixMut};
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
@@ -17,7 +17,7 @@ impl<
     > GenericBaseMatrixMut<Item, L, Data, RS, CS>
 {
     /// Apply a callable to each element of a matrix.
-    /// 
+    ///
     /// The callable `f` takes a mutable reference to a matrix
     /// element.
     pub fn for_each<F: FnMut(&mut Item)>(&mut self, mut f: F) {
@@ -28,14 +28,13 @@ impl<
 }
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         Data: DataContainer<Item = Item>,
         L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
     > GenericBaseMatrix<Item, L, Data, RS, CS>
-    {
-    
+{
     /// Return a pointer to the start of the underlying memory region.
     #[inline]
     pub fn get_pointer(&self) -> *const Item {
@@ -43,7 +42,7 @@ impl<
     }
 
     /// Return a region of the matrix as memory slice.
-    /// 
+    ///
     /// The parameters `first` and `last` are with respect to raw
     /// indexing in the memory. So for nontrivial strides this will
     /// be different to the 1d indices in standard row or column major
@@ -57,7 +56,7 @@ impl<
 }
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         Data: DataContainerMut<Item = Item>,
         L: LayoutType,
         RS: SizeIdentifier,
@@ -71,7 +70,7 @@ impl<
     }
 
     /// Return a region of the matrix as mutable memory slice.
-    /// 
+    ///
     /// The parameters `first` and `last` are with respect to raw
     /// indexing in the memory. So for nontrivial strides this will
     /// be different to the 1d indices in standard row or column major

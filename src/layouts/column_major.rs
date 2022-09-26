@@ -1,5 +1,5 @@
 //! Column major layout.
-//! 
+//!
 //! This layout describes a column major memory order
 //! with column major 1d indexing. For further information on memory layouts
 //! see [crate::traits::layout].

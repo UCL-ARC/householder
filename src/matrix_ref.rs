@@ -1,5 +1,5 @@
 //! A matrix that holds a reference to another matrix.
-//! 
+//!
 //! The type defined in this module translates a reference to a matrix into an owned matrix.
 //! Why is this necessary? Consider the code `let sum = mat1 + mat2` with `mat1` and `mat2`
 //! matrices. The result `sum` is an addition type that now owns `mat1` and `mat2`. But
@@ -11,12 +11,12 @@
 //! solution is to create a type that turns a reference to a matrix into an owned matrix.
 //! This is what [MatrixRef] is doing. It simply takes a reference to a matrix and forwards
 //! all matrix operations to the reference. Hence, an expression of the form `&mat1 + mat2` will
-//! first be converted into an expression similar to `MatrixRef(&mat1) + mat2`, and then 
+//! first be converted into an expression similar to `MatrixRef(&mat1) + mat2`, and then
 //! both terms passed onto the addition type, which takes ownership of both terms.
 
 use crate::matrix::Matrix;
 use crate::traits::*;
-use crate::types::{IndexType, Scalar};
+use crate::types::{HScalar, IndexType};
 use std::marker::PhantomData;
 
 // A struct that implements [MatrixTrait] by holding a reference
@@ -29,7 +29,7 @@ pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
     PhantomData<CS>,
 )
 where
-    Item: Scalar,
+    Item: HScalar,
     L: LayoutType,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
@@ -37,7 +37,7 @@ where
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
         L: LayoutType,
         RS: SizeIdentifier,
@@ -47,7 +47,6 @@ impl<
     pub fn new(mat: &'a Matrix<Item, MatImpl, L, RS, CS>) -> Self {
         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
-
 }
 
 pub struct MatrixRefMut<'a, Item, MatImpl, L, RS, CS>(
@@ -58,7 +57,7 @@ pub struct MatrixRefMut<'a, Item, MatImpl, L, RS, CS>(
     PhantomData<CS>,
 )
 where
-    Item: Scalar,
+    Item: HScalar,
     L: LayoutType,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
@@ -66,7 +65,7 @@ where
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
         L: LayoutType,
         RS: SizeIdentifier,
@@ -82,7 +81,7 @@ macro_rules! matrix_ref_traits {
     ($MatrixRefType:ident) => {
         impl<
                 'a,
-                Item: Scalar,
+                Item: HScalar,
                 MatImpl: MatrixTrait<Item, L, RS, CS>,
                 L: LayoutType,
                 RS: SizeIdentifier,
@@ -99,7 +98,7 @@ macro_rules! matrix_ref_traits {
 
         impl<
                 'a,
-                Item: Scalar,
+                Item: HScalar,
                 MatImpl: MatrixTrait<Item, L, RS, CS>,
                 L: LayoutType,
                 RS: SizeIdentifier,
@@ -110,10 +109,9 @@ macro_rules! matrix_ref_traits {
             type C = CS;
         }
 
-
         impl<
                 'a,
-                Item: Scalar,
+                Item: HScalar,
                 MatImpl: MatrixTrait<Item, L, RS, CS>,
                 L: LayoutType,
                 RS: SizeIdentifier,
@@ -140,7 +138,7 @@ matrix_ref_traits!(MatrixRefMut);
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         MatImpl: MatrixTraitMut<Item, L, RS, CS>,
         L: LayoutType,
         RS: SizeIdentifier,

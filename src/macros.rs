@@ -65,7 +65,6 @@ macro_rules! rand_vector {
     }};
 }
 
-
 #[cfg(test)]
 mod test {
 
@@ -108,5 +107,4 @@ mod test {
 
         assert_eq!(vec.dim(), (5, 1));
     }
-
 }
