@@ -7,34 +7,22 @@
 //! - [Layout]. Provides an interface to obtain layout information for the matrix.
 //! - [SizeType]. Specifies whether the row/column dimension is known at compile time
 //!               or specified at runtime.
-//! 
+//!
 //! [MatrixTraitMut] additionally depends on the trait [RandomAccessMut] to provide
 //! mutable access to matrix elements.
-use crate::traits::{
-    LayoutType, Layout, RandomAccess, RandomAccessMut, SizeIdentifier,
-    SizeType,
-};
+use crate::traits::{Layout, LayoutType, RandomAccess, RandomAccessMut, SizeIdentifier, SizeType};
 use crate::types::Scalar;
 
 /// Combined trait for basic matrix properties. See [crate::traits::matrix]
 /// for details.
-pub trait MatrixTrait<
-    Item: Scalar,
-    L: LayoutType,
-    RS: SizeIdentifier,
-    CS: SizeIdentifier,
->:
-    RandomAccess<Item = Item> + Layout<Impl=L> + SizeType<R = RS, C = CS>
+pub trait MatrixTrait<Item: Scalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier>:
+    RandomAccess<Item = Item> + Layout<Impl = L> + SizeType<R = RS, C = CS>
 {
 }
 
 /// Combined trait for mutable matrices. See [crate::traits::matrix] for details.
-pub trait MatrixTraitMut<
-    Item: Scalar,
-    L: LayoutType,
-    RS: SizeIdentifier,
-    CS: SizeIdentifier,
->: RandomAccessMut<Item = Item> + MatrixTrait<Item, L, RS, CS>
+pub trait MatrixTraitMut<Item: Scalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier>:
+    RandomAccessMut<Item = Item> + MatrixTrait<Item, L, RS, CS>
 {
 }
 
@@ -43,7 +31,7 @@ impl<
         L: LayoutType,
         RS: SizeIdentifier,
         CS: SizeIdentifier,
-        Mat: RandomAccess<Item = Item> + Layout<Impl=L> + SizeType<R = RS, C = CS>,
+        Mat: RandomAccess<Item = Item> + Layout<Impl = L> + SizeType<R = RS, C = CS>,
     > MatrixTrait<Item, L, RS, CS> for Mat
 {
 }

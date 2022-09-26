@@ -1,5 +1,5 @@
 //! Multiplication of a matrix with a scalar
-//! 
+//!
 //! This module implements the multiplication of a matrix with a scalar. Instead
 //! of immediately executing the product a new matrix is created whose implementation
 //! is a struct that holds the original operator and the scalar. On element access the

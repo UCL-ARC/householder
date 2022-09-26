@@ -1,13 +1,13 @@
 //! Definition of a base matrix.
-//! 
+//!
 //! A base matrix is an implementation of a matrix that
 //! is directly associated with a [DataContainer] (typically a memory region).
-//! 
-//! The user should never interact with [BaseMatrix] directly. Rather, the 
+//!
+//! The user should never interact with [BaseMatrix] directly. Rather, the
 //! relevant user type is a [GenericBaseMatrix](crate::matrix::GenericBaseMatrix),
-//! which is a [Matrix](crate::matrix::Matrix) that forwards call to the 
+//! which is a [Matrix](crate::matrix::Matrix) that forwards call to the
 //! [BaseMatrix] implementation.
-//! 
+//!
 use crate::data_container::{DataContainer, DataContainerMut};
 use crate::layouts::*;
 use crate::traits::*;

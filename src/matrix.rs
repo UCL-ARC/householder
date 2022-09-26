@@ -9,24 +9,26 @@
 //! A matrix is generic over the following parameters:
 //! - `Item`. Implements the [Scalar] trait and represents the underlying scalar type
 //!           of the matrix.
-//! - `MatImpl`. he actual implementation of the matrix. It must itself implement the
-//!              trait [MatrixTrait] or [MatrixTraitMut] depending on wheter mutable access
+//! - `MatImpl`. The actual implementation of the matrix. It must itself implement the
+//!              trait [MatrixTrait] or [MatrixTraitMut] depending on whether mutable access
 //!              is required.
 //! - `L`. A given type that implements the [LayoutType] trait and specifies the memory layout
 //!        of the matrix.
 //! - `RS`. A type that implements [SizeType] and specifies whether the row dimension is known
 //!         at compile time or dynamically at runtime.
 //! - `CS`. A type that implements [SizeType]  and specifies whether the column dimension is
-//!         known at compile time or dynamically at runtime. 
+//!         known at compile time or dynamically at runtime.
 
+pub mod base_methods;
 pub mod common_impl;
 pub mod constructors;
-pub mod base_methods;
 pub mod matrix_slices;
 pub mod random;
 
 use crate::base_matrix::BaseMatrix;
-use crate::data_container::{ArrayContainer, DataContainer, VectorContainer, SliceContainer, SliceContainerMut};
+use crate::data_container::{
+    ArrayContainer, DataContainer, SliceContainer, SliceContainerMut, VectorContainer,
+};
 use crate::layouts::*;
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;

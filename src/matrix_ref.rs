@@ -1,5 +1,5 @@
 //! A matrix that holds a reference to another matrix.
-//! 
+//!
 //! The type defined in this module translates a reference to a matrix into an owned matrix.
 //! Why is this necessary? Consider the code `let sum = mat1 + mat2` with `mat1` and `mat2`
 //! matrices. The result `sum` is an addition type that now owns `mat1` and `mat2`. But
@@ -11,7 +11,7 @@
 //! solution is to create a type that turns a reference to a matrix into an owned matrix.
 //! This is what [MatrixRef] is doing. It simply takes a reference to a matrix and forwards
 //! all matrix operations to the reference. Hence, an expression of the form `&mat1 + mat2` will
-//! first be converted into an expression similar to `MatrixRef(&mat1) + mat2`, and then 
+//! first be converted into an expression similar to `MatrixRef(&mat1) + mat2`, and then
 //! both terms passed onto the addition type, which takes ownership of both terms.
 
 use crate::matrix::Matrix;
@@ -47,7 +47,6 @@ impl<
     pub fn new(mat: &'a Matrix<Item, MatImpl, L, RS, CS>) -> Self {
         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
-
 }
 
 pub struct MatrixRefMut<'a, Item, MatImpl, L, RS, CS>(
@@ -109,7 +108,6 @@ macro_rules! matrix_ref_traits {
             type R = RS;
             type C = CS;
         }
-
 
         impl<
                 'a,

@@ -1,11 +1,11 @@
 //! Methods for the creation of random matrices.
 
 use crate::data_container::DataContainerMut;
+use crate::tools::*;
 use crate::traits::*;
 use crate::types::*;
 use rand::prelude::*;
 use rand_distr::StandardNormal;
-use crate::tools::*;
 
 use super::GenericBaseMatrixMut;
 
@@ -31,4 +31,3 @@ rand_impl!(f32);
 rand_impl!(f64);
 rand_impl!(c32);
 rand_impl!(c64);
-

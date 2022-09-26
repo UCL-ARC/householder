@@ -59,7 +59,6 @@ pub trait MatMul<
 
 macro_rules! dot_impl {
     ($Scalar:ty) => {
-
         // Matrix x Matrix = Matrix
         impl<
                 L1: StridedLayoutType,
@@ -349,10 +348,10 @@ dot_impl!(f64);
 mod test {
 
     use super::*;
+    use crate::matrix::*;
     use crate::tools::RandScalar;
     use approx::assert_ulps_eq;
     use rand_distr::StandardNormal;
-    use crate::matrix::*;
 
     use rand::prelude::*;
 

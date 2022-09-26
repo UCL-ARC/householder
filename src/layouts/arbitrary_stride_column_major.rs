@@ -1,5 +1,5 @@
 //! Column major layout with arbitrary stride.
-//! 
+//!
 //! This layout uses an arbitrary stride in memory with 1d indexing
 //! in column major order. For further information on memory layouts
 //! see [crate::traits::layout].

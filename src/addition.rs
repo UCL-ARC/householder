@@ -1,5 +1,5 @@
 //! Addition of two matrices.
-//! 
+//!
 //! This module defines a type [AdditionMat] that represents the addition of two
 //! matrices. Two matrices can be added together if they have the same dimension and
 //! same index layout, meaning a 1d indexing traverses both matrices in the same order.
@@ -233,7 +233,6 @@ mod test {
     fn scalar_mult() {
         let mut mat1 = MatrixD::<f64, RowMajor>::zeros_from_dim(2, 3);
         let mut mat2 = MatrixD::<f64, RowMajor>::zeros_from_dim(2, 3);
-
 
         *mat1.get_mut(1, 2) = 5.0;
         *mat2.get_mut(1, 2) = 6.0;

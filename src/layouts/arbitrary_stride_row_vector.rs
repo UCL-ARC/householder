@@ -1,5 +1,5 @@
 //! Row vector with arbitrary stride.
-//! 
+//!
 //! This layout describes a row vector with arbitrary
 //! stride. The stride vector is by definition of the form
 //! `(1, c)` for this type, where `c` is the distance of two

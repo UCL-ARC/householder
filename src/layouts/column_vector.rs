@@ -1,5 +1,5 @@
 //! Column vector layout.
-//! 
+//!
 //! This layout describes a column vector whose elements
 //! are in consecutive order in memory.
 

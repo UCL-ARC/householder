@@ -1,11 +1,11 @@
 //! Data containers are simple structures that hold data and allow access to it.
-//! 
+//!
 //! A data container in `householder` is defined through the [DataContainer] trait.
-//! It is a very simple interface that provides low-level access methods and 
+//! It is a very simple interface that provides low-level access methods and
 //! knows about how many elements are in the data container. Some data containers
 //! are pre-defined, namely
-//! 
-//! 
+//!
+//!
 
 use crate::types::IndexType;
 use crate::types::Scalar;
@@ -66,7 +66,6 @@ pub trait DataContainerMut: DataContainer {
             first,
             self.number_of_elements()
         );
-
 
         assert!(
             last <= self.number_of_elements(),

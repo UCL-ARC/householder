@@ -13,5 +13,3 @@ pub use cauchy::c64;
 /// The index type used throughout this crate. By default
 /// it is set to `usize`.
 pub type IndexType = usize;
-
-
