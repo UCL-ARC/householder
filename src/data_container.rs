@@ -36,7 +36,7 @@ pub trait DataContainer {
         );
 
         unsafe {
-            std::slice::from_raw_parts(self.get_pointer().offset(first as isize), last - first)
+            std::slice::from_raw_parts(self.get_pointer().add(first), last - first)
         }
     }
 
@@ -76,7 +76,7 @@ pub trait DataContainerMut: DataContainer {
 
         unsafe {
             std::slice::from_raw_parts_mut(
-                self.get_pointer_mut().offset(first as isize),
+                self.get_pointer_mut().add(first),
                 last - first,
             )
         }
@@ -118,6 +118,12 @@ impl<Item: Scalar, const N: usize> ArrayContainer<Item, N> {
         ArrayContainer::<Item, N> {
             data: [num::cast::<f64, Item>(0.0).unwrap(); N],
         }
+    }
+}
+
+impl<Item: Scalar, const N: usize> Default for ArrayContainer<Item, N> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
