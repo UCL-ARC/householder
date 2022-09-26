@@ -48,5 +48,4 @@ pub mod matrix_multiply;
 pub mod matrix_ref;
 pub mod scalar_mult;
 
-pub use cauchy::Scalar;
 pub use global::*;

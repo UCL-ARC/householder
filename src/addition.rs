@@ -7,7 +7,8 @@
 use crate::matrix::*;
 use crate::matrix_ref::MatrixRef;
 use crate::traits::*;
-use cauchy::Scalar;
+use crate::types::*;
+
 use std::marker::PhantomData;
 
 /// A type that represents the sum of two matrices.
@@ -26,7 +27,7 @@ pub struct Addition<Item, MatImpl1, MatImpl2, B, L1, L2, RS, CS>(
     PhantomData<CS>,
 )
 where
-    Item: Scalar,
+    Item: HScalar,
     B: BaseLayoutType,
     L1: LayoutType<IndexLayout = B>,
     L2: LayoutType<IndexLayout = B>,
@@ -36,7 +37,7 @@ where
     MatImpl2: MatrixTrait<Item, L2, RS, CS>;
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,
@@ -74,7 +75,7 @@ impl<
 }
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,
@@ -92,7 +93,7 @@ impl<
 }
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,
@@ -107,7 +108,7 @@ impl<
 }
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,
@@ -135,7 +136,7 @@ impl<
 }
 
 impl<
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,
@@ -154,7 +155,7 @@ impl<
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,
@@ -174,7 +175,7 @@ impl<
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,
@@ -194,7 +195,7 @@ impl<
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         B: BaseLayoutType,
         MatImpl1: MatrixTrait<Item, L1, RS, CS>,
         MatImpl2: MatrixTrait<Item, L2, RS, CS>,

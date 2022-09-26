@@ -16,7 +16,7 @@
 
 use crate::matrix::Matrix;
 use crate::traits::*;
-use crate::types::{IndexType, Scalar};
+use crate::types::{HScalar, IndexType};
 use std::marker::PhantomData;
 
 // A struct that implements [MatrixTrait] by holding a reference
@@ -29,7 +29,7 @@ pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
     PhantomData<CS>,
 )
 where
-    Item: Scalar,
+    Item: HScalar,
     L: LayoutType,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
@@ -37,7 +37,7 @@ where
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
         L: LayoutType,
         RS: SizeIdentifier,
@@ -57,7 +57,7 @@ pub struct MatrixRefMut<'a, Item, MatImpl, L, RS, CS>(
     PhantomData<CS>,
 )
 where
-    Item: Scalar,
+    Item: HScalar,
     L: LayoutType,
     RS: SizeIdentifier,
     CS: SizeIdentifier,
@@ -65,7 +65,7 @@ where
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         MatImpl: MatrixTrait<Item, L, RS, CS>,
         L: LayoutType,
         RS: SizeIdentifier,
@@ -81,7 +81,7 @@ macro_rules! matrix_ref_traits {
     ($MatrixRefType:ident) => {
         impl<
                 'a,
-                Item: Scalar,
+                Item: HScalar,
                 MatImpl: MatrixTrait<Item, L, RS, CS>,
                 L: LayoutType,
                 RS: SizeIdentifier,
@@ -98,7 +98,7 @@ macro_rules! matrix_ref_traits {
 
         impl<
                 'a,
-                Item: Scalar,
+                Item: HScalar,
                 MatImpl: MatrixTrait<Item, L, RS, CS>,
                 L: LayoutType,
                 RS: SizeIdentifier,
@@ -111,7 +111,7 @@ macro_rules! matrix_ref_traits {
 
         impl<
                 'a,
-                Item: Scalar,
+                Item: HScalar,
                 MatImpl: MatrixTrait<Item, L, RS, CS>,
                 L: LayoutType,
                 RS: SizeIdentifier,
@@ -138,7 +138,7 @@ matrix_ref_traits!(MatrixRefMut);
 
 impl<
         'a,
-        Item: Scalar,
+        Item: HScalar,
         MatImpl: MatrixTraitMut<Item, L, RS, CS>,
         L: LayoutType,
         RS: SizeIdentifier,
