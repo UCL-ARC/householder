@@ -38,16 +38,13 @@ impl HScalar for c32 {
     type Real = f32;
 
     fn atan2(self, x: c32) -> c32 {
-        // not sure this is correct. but I'm also not sure atan2 is meaningful in the complex case.
-        let arg = self / x;
-        arg.atan()
+        unimplemented!("atan2 is not defined for complex numbers");
     }
 }
 
 impl HScalar for c64 {
     type Real = f64;
     fn atan2(self, x: c64) -> c64 {
-        let arg = self / x;
-        arg.atan()
+        unimplemented!("atan2 is not defined for complex numbers");
     }
 }
