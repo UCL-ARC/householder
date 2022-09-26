@@ -11,29 +11,17 @@
 //! [MatrixTraitMut] additionally depends on the trait [RandomAccessMut] to provide
 //! mutable access to matrix elements.
 use crate::traits::{Layout, LayoutType, RandomAccess, RandomAccessMut, SizeIdentifier, SizeType};
-<<<<<<< HEAD
-use crate::types::Scalar;
-
-/// Combined trait for basic matrix properties. See [crate::traits::matrix]
-/// for details.
-pub trait MatrixTrait<Item: Scalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier>:
-=======
 use crate::types::HScalar;
 
 /// Combined trait for basic matrix properties. See [crate::traits::matrix]
 /// for details.
 pub trait MatrixTrait<Item: HScalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier>:
->>>>>>> main
     RandomAccess<Item = Item> + Layout<Impl = L> + SizeType<R = RS, C = CS>
 {
 }
 
 /// Combined trait for mutable matrices. See [crate::traits::matrix] for details.
-<<<<<<< HEAD
-pub trait MatrixTraitMut<Item: Scalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier>:
-=======
 pub trait MatrixTraitMut<Item: HScalar, L: LayoutType, RS: SizeIdentifier, CS: SizeIdentifier>:
->>>>>>> main
     RandomAccessMut<Item = Item> + MatrixTrait<Item, L, RS, CS>
 {
 }

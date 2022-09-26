@@ -114,13 +114,13 @@ impl<Item: HScalar, const N: usize> ArrayContainer<Item, N> {
     }
 }
 
-impl<Item: Scalar, const N: usize> Default for ArrayContainer<Item, N> {
+impl<Item: HScalar, const N: usize> Default for ArrayContainer<Item, N> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'a, Item: Scalar> SliceContainer<'a, Item> {
+impl<'a, Item: HScalar> SliceContainer<'a, Item> {
     /// New slice container from a reference.
     pub fn new(slice: &'a [Item]) -> SliceContainer<Item> {
         SliceContainer::<Item> { data: slice }
