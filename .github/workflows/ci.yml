@@ -18,9 +18,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: nightly
           override: true
+          components: rustfmt
       - name: Cache dependencies
         uses: actions/cache@v2
         env:
@@ -40,6 +40,9 @@ jobs:
           cargo test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
           zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
           grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov.info;
+      
+      - name: Run linter
+        run: cargo fmt --all -- --check
       - name: Upload test results
         uses: EnricoMi/publish-unit-test-result-action@v1
         with:

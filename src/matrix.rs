@@ -9,8 +9,8 @@
 //! A matrix is generic over the following parameters:
 //! - `Item`. Implements the [HScalar] trait and represents the underlying scalar type
 //!           of the matrix.
-//! - `MatImpl`. he actual implementation of the matrix. It must itself implement the
-//!              trait [MatrixTrait] or [MatrixTraitMut] depending on wheter mutable access
+//! - `MatImpl`. The actual implementation of the matrix. It must itself implement the
+//!              trait [MatrixTrait] or [MatrixTraitMut] depending on whether mutable access
 //!              is required.
 //! - `L`. A given type that implements the [LayoutType] trait and specifies the memory layout
 //!        of the matrix.

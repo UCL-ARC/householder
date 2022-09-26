@@ -31,7 +31,7 @@ macro_rules! block_matrix {
                 let start_index = self.layout().convert_2d_raw(top_left.0, top_left.1);
                 unsafe {
                     SliceMatrix::<'a, Item, $StrideLayout, $RS, $CS>::from_pointer(
-                        self.get_pointer().offset(start_index as isize),
+                        self.get_pointer().add(start_index),
                         dim,
                         self.layout().stride(),
                     )
@@ -61,7 +61,7 @@ macro_rules! block_matrix {
 
                 unsafe {
                     SliceMatrixMut::<'a, Item, $StrideLayout, $RS, $CS>::from_pointer(
-                        self.get_pointer_mut().offset(start_index as isize),
+                        self.get_pointer_mut().add(start_index),
                         dim,
                         self.layout().stride(),
                     )

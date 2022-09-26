@@ -35,9 +35,7 @@ pub trait DataContainer {
             self.number_of_elements()
         );
 
-        unsafe {
-            std::slice::from_raw_parts(self.get_pointer().offset(first as isize), last - first)
-        }
+        unsafe { std::slice::from_raw_parts(self.get_pointer().add(first), last - first) }
     }
 
     /// Return the number of elements in the container.
@@ -74,12 +72,7 @@ pub trait DataContainerMut: DataContainer {
             self.number_of_elements()
         );
 
-        unsafe {
-            std::slice::from_raw_parts_mut(
-                self.get_pointer_mut().offset(first as isize),
-                last - first,
-            )
-        }
+        unsafe { std::slice::from_raw_parts_mut(self.get_pointer_mut().add(first), last - first) }
     }
 }
 
@@ -118,6 +111,12 @@ impl<Item: HScalar, const N: usize> ArrayContainer<Item, N> {
         ArrayContainer::<Item, N> {
             data: [num::cast::<f64, Item>(0.0).unwrap(); N],
         }
+    }
+}
+
+impl<Item: HScalar, const N: usize> Default for ArrayContainer<Item, N> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
