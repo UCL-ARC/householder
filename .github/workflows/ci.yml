@@ -57,7 +57,10 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Run tests
+      # Need to manually set pipefail since we're piping the output to a file
         run: |
+          set -e
+          set -o pipefail
           cargo test --no-fail-fast -- -Z unstable-options --format json | tee results.json
 
       - name: Create coverage files
