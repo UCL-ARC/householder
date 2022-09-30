@@ -31,6 +31,7 @@
 //! - [Matrix storage layouts](crate::layouts)
 //! - [The Matrix type](crate::matrix)
 //! - [Examples](crate::examples)
+#![deny(missing_docs)]
 
 pub mod data_container;
 pub mod examples;
