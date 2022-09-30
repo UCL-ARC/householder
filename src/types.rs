@@ -1,6 +1,5 @@
 //! HScalar types used by the library
 
-
 pub use cauchy::Scalar;
 
 /// Describes scalar floating types. Implemented
