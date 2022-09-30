@@ -35,6 +35,7 @@ impl<
         CS: SizeIdentifier,
     > BaseMatrix<Item, Data, L, RS, CS>
 {
+    /// Create a new BaseMatrix
     pub fn new(data: Data, layout: L) -> Self {
         assert!(
             layout.number_of_elements() <= data.number_of_elements(),
@@ -59,11 +60,13 @@ impl<
         CS: SizeIdentifier,
     > BaseMatrix<Item, Data, L, RS, CS>
 {
+    /// Get a pointer to the data
     #[inline]
     pub fn get_pointer(&self) -> *const Item {
         self.data.get_pointer()
     }
 
+    /// Get a slice to the data
     #[inline]
     pub fn get_slice(&self, first: IndexType, last: IndexType) -> &[Item] {
         self.data.get_slice(first, last)
@@ -78,11 +81,13 @@ impl<
         CS: SizeIdentifier,
     > BaseMatrix<Item, Data, L, RS, CS>
 {
+    /// Get a mutable pointer to the data
     #[inline]
     pub fn get_pointer_mut(&mut self) -> *mut Item {
         self.data.get_pointer_mut()
     }
 
+    /// Get a mutable slice to the data
     #[inline]
     pub fn get_slice_mut(&mut self, first: IndexType, last: IndexType) -> &mut [Item] {
         self.data.get_slice_mut(first, last)
@@ -148,6 +153,7 @@ macro_rules! vector_length {
                 CS: SizeIdentifier,
             > BaseMatrix<Item, Data, $Layout, RS, CS>
         {
+            /// Get number of data elements.
             pub fn length(&self) -> IndexType {
                 self.data.number_of_elements()
             }

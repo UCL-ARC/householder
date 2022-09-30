@@ -42,6 +42,7 @@ impl<
         CS: SizeIdentifier,
     > ScalarMult<Item, MatImpl, L, RS, CS>
 {
+    /// Create a new ScalarMult
     pub fn new(mat: Matrix<Item, MatImpl, L, RS, CS>, scalar: Item) -> Self {
         Self(
             mat,

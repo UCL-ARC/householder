@@ -13,6 +13,7 @@ pub struct ColumnMajor {
 }
 
 impl ColumnMajor {
+    /// Create a new ColumnMajor
     pub fn new(dim: (IndexType, IndexType)) -> Self {
         Self { dim }
     }

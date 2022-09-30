@@ -15,6 +15,7 @@ pub struct ArbitraryStrideRowMajor {
 }
 
 impl ArbitraryStrideRowMajor {
+    /// Create a new  ArbitraryStrideRowMajor
     pub fn new(dim: (IndexType, IndexType), stride: (IndexType, IndexType)) -> Self {
         Self { dim, stride }
     }

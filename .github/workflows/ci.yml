@@ -3,9 +3,29 @@ on:
     branches: [ main ]
   pull_request:
 
-name: Test
-
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Run linting
+        run: cargo fmt --all -- --check
+
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build docs
+        run: cargo doc
+
   test:
     name: Test
     env:
@@ -21,6 +41,7 @@ jobs:
           toolchain: nightly
           override: true
           components: rustfmt
+
       - name: Cache dependencies
         uses: actions/cache@v2
         env:
@@ -34,21 +55,27 @@ jobs:
             ~/.cargo/registry/cache
             target
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('Cargo.lock') }}
-      - name: Generate test result and coverage report
+
+      - name: Run tests
+      # Need to manually set pipefail since we're piping the output to a file
         run: |
+          set -e
+          set -o pipefail
+          cargo test --no-fail-fast -- -Z unstable-options --format json | tee results.json
+
+      - name: Create coverage files
+        run : |
           cargo install cargo2junit grcov;
-          cargo test $CARGO_OPTIONS -- -Z unstable-options --format json | cargo2junit > results.xml;
+          cat results.json | cargo2junit > results.xml
           zip -0 ccov.zip `find . \( -name "$PROJECT_NAME_UNDERSCORE*.gc*" \) -print`;
           grcov ccov.zip -s . -t lcov --llvm --ignore-not-existing --ignore "/*" --ignore "tests/*" -o lcov.info;
-      
-      - name: Run linter
-        run: cargo fmt --all -- --check
+
       - name: Upload test results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          check_name: Test Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          files: results.xml
+          junit_files: results.xml
+
       - name: Upload to CodeCov
         uses: codecov/codecov-action@v1
         with:

@@ -19,8 +19,8 @@ use crate::traits::*;
 use crate::types::{HScalar, IndexType};
 use std::marker::PhantomData;
 
-// A struct that implements [MatrixTrait] by holding a reference
-// to a matrix and forwarding all matrix operations to the held reference.
+/// A struct that implements [MatrixTrait] by holding a reference
+/// to a matrix and forwarding all matrix operations to the held reference.
 pub struct MatrixRef<'a, Item, MatImpl, L, RS, CS>(
     &'a Matrix<Item, MatImpl, L, RS, CS>,
     PhantomData<Item>,
@@ -44,11 +44,13 @@ impl<
         CS: SizeIdentifier,
     > MatrixRef<'a, Item, MatImpl, L, RS, CS>
 {
+    /// Create a new MatrixRef
     pub fn new(mat: &'a Matrix<Item, MatImpl, L, RS, CS>) -> Self {
         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 }
 
+/// Mutable reference to a Matrix
 pub struct MatrixRefMut<'a, Item, MatImpl, L, RS, CS>(
     &'a mut Matrix<Item, MatImpl, L, RS, CS>,
     PhantomData<Item>,
@@ -72,6 +74,7 @@ impl<
         CS: SizeIdentifier,
     > MatrixRefMut<'a, Item, MatImpl, L, RS, CS>
 {
+    /// Create a new MatrixRefMut
     pub fn new(mat: &'a mut Matrix<Item, MatImpl, L, RS, CS>) -> Self {
         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }

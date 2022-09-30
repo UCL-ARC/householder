@@ -54,6 +54,8 @@ impl SizeIdentifier for Dynamic {
 /// dimension type [SizeType::R] and the column dimension
 /// type [SizeType::C].
 pub trait SizeType {
+    /// Row dimension type
     type R: SizeIdentifier;
+    /// Column dimension type
     type C: SizeIdentifier;
 }

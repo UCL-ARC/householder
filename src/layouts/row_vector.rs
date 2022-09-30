@@ -12,6 +12,7 @@ pub struct RowVector {
 }
 
 impl RowVector {
+    /// Create a new RowVector
     pub fn new(dim: IndexType) -> Self {
         Self { dim }
     }

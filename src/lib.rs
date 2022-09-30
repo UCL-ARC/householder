@@ -31,6 +31,13 @@
 //! - [Matrix storage layouts](crate::layouts)
 //! - [The Matrix type](crate::matrix)
 //! - [Examples](crate::examples)
+#![deny(missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
+#![deny(rustdoc::missing_crate_level_docs)]
+#![deny(rustdoc::invalid_codeblock_attributes)]
+#![deny(rustdoc::invalid_html_tags)]
+#![deny(rustdoc::invalid_rust_codeblocks)]
+#![deny(rustdoc::bare_urls)]
 
 pub mod data_container;
 pub mod examples;

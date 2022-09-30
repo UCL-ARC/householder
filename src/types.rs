@@ -1,10 +1,13 @@
 //! HScalar types used by the library
 
-/// The [HScalar] trait describes scalar floating types. It is implemented
-/// for [f32], [f64], [c32], [c64].
 pub use cauchy::Scalar;
+
+/// Describes scalar floating types. Implemented
+/// for [f32], [f64], [c32], [c64].
 pub trait HScalar: cauchy::Scalar {
+    /// Type of the scalar
     type Real;
+    /// Arc-tangent choosing the quadrant correctly.
     fn atan2(self, x: Self) -> Self;
 }
 

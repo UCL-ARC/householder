@@ -12,6 +12,7 @@ pub struct ColumnVector {
 }
 
 impl ColumnVector {
+    /// Create a new ColumnVector
     pub fn new(dim: IndexType) -> Self {
         Self { dim }
     }
