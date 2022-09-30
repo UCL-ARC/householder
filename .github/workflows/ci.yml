@@ -15,6 +15,17 @@ jobs:
       - name: Run linting
         run: cargo fmt --all -- --check
 
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build docs
+        run: cargo doc
+
   test:
     name: Test
     env:
