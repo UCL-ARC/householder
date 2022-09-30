@@ -107,6 +107,7 @@ impl<Item: HScalar> VectorContainer<Item> {
 }
 
 impl<Item: HScalar, const N: usize> ArrayContainer<Item, N> {
+    /// Create a new ArrayContainer
     pub fn new() -> ArrayContainer<Item, N> {
         ArrayContainer::<Item, N> {
             data: [num::cast::<f64, Item>(0.0).unwrap(); N],

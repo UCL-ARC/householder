@@ -17,6 +17,7 @@ pub struct ArbitraryStrideRowVector {
 }
 
 impl ArbitraryStrideRowVector {
+    /// Create a new ArbitraryStrideRowVector
     pub fn new(dim: IndexType, stride: IndexType) -> Self {
         Self { dim, stride }
     }

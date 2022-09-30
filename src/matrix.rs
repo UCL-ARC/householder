@@ -122,10 +122,12 @@ impl<
         MatImpl: MatrixTrait<Item, L, RS, CS>,
     > Matrix<Item, MatImpl, L, RS, CS>
 {
+    /// Create a new Matrix
     pub fn new(mat: MatImpl) -> Self {
         Self(mat, PhantomData, PhantomData, PhantomData, PhantomData)
     }
 
+    /// Create a new Matrix from a reference to a Matrix
     pub fn from_ref<'a>(
         mat: &'a Matrix<Item, MatImpl, L, RS, CS>,
     ) -> RefMat<'a, Item, MatImpl, L, RS, CS> {
@@ -141,6 +143,7 @@ impl<
         Data: DataContainer<Item = Item>,
     > Matrix<Item, BaseMatrix<Item, Data, L, RS, CS>, L, RS, CS>
 {
+    /// Create a new matrix from data and a layout
     pub fn from_data(data: Data, layout: L) -> Self {
         Self::new(BaseMatrix::<Item, Data, L, RS, CS>::new(data, layout))
     }

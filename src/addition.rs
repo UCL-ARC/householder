@@ -47,6 +47,7 @@ impl<
         CS: SizeIdentifier,
     > Addition<Item, MatImpl1, MatImpl2, B, L1, L2, RS, CS>
 {
+    /// Create a new Addition
     pub fn new(
         mat1: Matrix<Item, MatImpl1, L1, RS, CS>,
         mat2: Matrix<Item, MatImpl2, L2, RS, CS>,

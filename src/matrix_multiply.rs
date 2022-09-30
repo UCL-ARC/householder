@@ -25,6 +25,7 @@ use num;
 /// This trait provides a high-level interface for the multiplication of a matrix
 /// with another matrix. The result is a new matrix, hence memory allocation takes place.
 pub trait Dot<Rhs> {
+    /// Type of the output matrix
     type Output;
 
     /// Return the matrix product with a right-hand side.

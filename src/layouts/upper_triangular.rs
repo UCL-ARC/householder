@@ -13,6 +13,7 @@ pub struct UpperTriangular {
 }
 
 impl UpperTriangular {
+    /// Create a new UpperTriangular
     pub fn new(dim: IndexType) -> Self {
         Self { dim }
     }
