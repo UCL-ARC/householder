@@ -32,7 +32,7 @@ pub trait Dot<Rhs> {
 }
 
 /// This trait is an interface for the `dgemm` operation `mat_c = alpha * mat_a * mat_b + beta * mat_c`.
-pub trait MatMul<
+pub trait DenseMatMul<
     Item: HScalar,
     L1: StridedLayoutType,
     L2: StridedLayoutType,
@@ -168,7 +168,7 @@ macro_rules! matmul_impl {
 >
 
 
-        MatMul<
+        DenseMatMul<
             $HScalar,
             L1,
             L2,
@@ -251,7 +251,7 @@ macro_rules! matmul_impl {
     >
 
 
-            MatMul<
+            DenseMatMul<
                 $HScalar,
                 L1,
                 L2,
